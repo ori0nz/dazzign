@@ -1,0 +1,128 @@
+# Python-generated files
+__pycache__/
+*.py[cod]
+*$py.class
+build/
+dist/
+wheels/
+*.egg-info/
+.eggs/
+*.so
+.Python
+MANIFEST
+
+# Virtual environments
+.venv
+venv/
+ENV/
+env/
+
+# Environment variables
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+
+# IDE specific files
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+.spyderproject
+.spyproject
+.ropeproject
+.projectile
+.dir-locals.el
+
+# Database files
+*.sqlite3
+*.db
+postgres-data/
+dazzign_postgres_data/
+*.dump
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Testing
+.coverage
+htmlcov/
+.pytest_cache/
+.tox/
+.nox/
+nosetests.xml
+coverage.xml
+*.cover
+
+# Docker
+.dockerignore
+
+# Distribution / packaging
+.Python
+*.manifest
+*.spec
+.installed.cfg
+.pytest_cache/
+*.egg
+
+# Documentation
+docs/_build/
+build/
+doc/build/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# MacOS specific
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows specific
+Thumbs.db
+ehthumbs.db
+desktop.ini
+
+# JavaScript & React
+node_modules/
+.npm/
+npm-debug.log
+yarn-error.log
+yarn-debug.log
+.yarn-integrity
+.yarn/
+.pnp.*
+.eslintcache
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# React & Frontend build
+/build/
+/dist/
+.next/
+.nuxt/
+out/
+storybook-static/
+.cache/
+public/bundles/
+public/static/
+
+# JavaScript testing
+coverage/
+.nyc_output/
+cypress/videos/
+cypress/screenshots/
+screenshot*.png
+
+# Frontend tooling
+.sass-cache/
+bower_components/

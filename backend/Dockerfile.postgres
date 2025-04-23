@@ -1,0 +1,16 @@
+FROM postgres:17.4-alpine
+
+# Set environment variables with default values
+ENV POSTGRES_USER=postgres
+ENV POSTGRES_PASSWORD=postgres
+ENV POSTGRES_DB=dazzign
+
+# Copy initialization scripts if needed
+# COPY ./init.sql /docker-entrypoint-initdb.d/
+
+# Expose the PostgreSQL port
+EXPOSE 5432
+
+# These settings are for development only
+# For production, configure the postgres.conf properly
+CMD ["postgres", "-c", "log_statement=all", "-c", "log_destination=stderr"] 

@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  db:
+    container_name: dazzign-db
+    build:
+      context: .
+      dockerfile: Dockerfile.postgres
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-dazzign}
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - dazzign_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+# Named volume for data persistence
+# Actual location is managed by Docker and depends on your OS
+# See README.md for details on where Docker stores this data
+volumes:
+  dazzign_postgres_data: 

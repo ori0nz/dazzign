@@ -34,28 +34,21 @@ async def generate_image(
     Generate a new image based on the provided prompt
     """
     try:
-        # In a real application, this would call an AI model
-        image_base64 = await mock_generate_image(request.prompt)
+        # Prepare data for image generation
+        image_data = await ImageService.prepare_generation_data(
+            prompt=request.prompt,
+            negative_prompt=request.negative_prompt,
+            parent_id=request.parent_id,
+            project_id=1  # Default project ID for now
+        )
         
-        # Create image data object
-        image_data = {
-            "project_id": request.project_id,
-            "parent_id": request.parent_id,
-            "prompt": request.prompt,
-            "negative_prompt": request.negative_prompt,
-            "spec_json": request.spec_json,
-            "request_params": {
-                "prompt": request.prompt,
-                "negative_prompt": request.negative_prompt,
-                "spec_json": request.spec_json
-            },
-            "action_type": "generate"
-        }
+        # Generate the image
+        image_base64 = await ImageService.generate_image(request.prompt)
         
         # Create image in database
         db_image = await ImageService.create_image(
             db, 
-            ImageNode(**image_data), 
+            image_data, 
             image_base64
         )
         
@@ -133,7 +126,6 @@ async def list_root_images(
 ) -> Any:
     """
     List all root images (images with no parent)
-    Optionally filter by project_id
     """
     try:
         images, total = await ImageService.get_root_images(

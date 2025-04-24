@@ -1,7 +1,11 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict, RootModel
 from typing import Optional, Dict, Any, List
 from datetime import datetime
 from app.schemas.node.base import NodeBase
+
+
+def to_camel(string: str) -> str:
+    return ''.join(word.capitalize() if i else word for i, word in enumerate(string.split('_')))
 
 # Schema for DB response
 class NodeResponse(NodeBase):
@@ -17,20 +21,22 @@ class NodeResponse(NodeBase):
     action_type: str
     created_at: datetime
     
-    model_config = {
-        "from_attributes": True
-    }
+    model_config = ConfigDict(
+        from_attributes=True,          # orm object to pydantic model
+        alias_generator=to_camel,      
+        populate_by_name=True          # support snake_case to camelCase
+    )
 
-# Schema for node with children (recursive tree structure)
-class NodeWithChildren(NodeResponse):
-    children: List["NodeWithChildren"] = Field(default_factory=list)
-    
-# Resolve forward reference
-NodeWithChildren.model_rebuild()
     
 # Schema for tree response
-class NodeTreeResponse(BaseModel):
-    tree: NodeWithChildren
+class NodeTreeResponse(RootModel):
+    root: List[NodeResponse]
+    
+    model_config = ConfigDict(
+        from_attributes=True,
+        alias_generator=to_camel,
+        populate_by_name=True
+    )
     
 # Schema for root response
 class RootNodesResponse(BaseModel):

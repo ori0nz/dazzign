@@ -4,7 +4,7 @@ from sqlalchemy import select, desc, and_, text
 from sqlalchemy.orm import selectinload
 from app.models.node import Node
 from app.schemas.node.domain import NodeCreate, NodeLineage, RootNodes
-from app.schemas.node.response import NodeWithChildren
+from app.schemas.node.response import NodeTreeResponse
 import logging
 
 logger = logging.getLogger(__name__)
@@ -50,7 +50,7 @@ class NodeService:
         return result.scalars().first()
     
     @staticmethod
-    async def get_node_tree(db: AsyncSession, node_id: int) -> Optional[NodeWithChildren]:
+    async def get_node_tree(db: AsyncSession, node_id: int) -> Optional[NodeTreeResponse]:
         """
         Get a node and all its descendants as a tree structure
         """
@@ -71,70 +71,11 @@ class NodeService:
                 """)
         
         result = await db.execute(sql, {"node_id": node_id})
-        all_nodes = result.all()
-        
-        # Convert to dictionaries
-        nodes_dict = []
-        for row in all_nodes:
-            node_dict = {}
-            for idx, col in enumerate(result.keys()):
-                node_dict[col] = row[idx]
-            nodes_dict.append(node_dict)
-        
-        # Build tree structure
-        def build_tree(nodes, parent_id):
-            children = []
-            for n in nodes:
-                if n["parent_id"] == parent_id:
-                    child = {**n}
-                    child["children"] = build_tree(nodes, n["id"])
-                    children.append(child)
-            return children
-            
-        # The root node is the one we queried for
-        root_node = next(n for n in nodes_dict if n["id"] == node_id)
-        root_node["children"] = build_tree(nodes_dict, node_id)
-        
-        # Convert dictionary to NodeWithChildren
-        return NodeService._dict_to_node_with_children(root_node)
+        rows = result.mappings().all()  
+        # logger.info(f"rows: {rows}")
+
+        return rows
     
-    @staticmethod
-    def _dict_to_node_with_children(node_dict: Dict[str, Any]) -> NodeWithChildren:
-        """Helper method to convert a dictionary to NodeWithChildren"""
-        children = node_dict.pop("children", [])
-        node = NodeWithChildren(**node_dict)
-        node.children = [NodeService._dict_to_node_with_children(child) for child in children]
-        return node
-    
-    @staticmethod
-    async def get_project_images(
-        db: AsyncSession, 
-        project_id: int,
-        page: int = 1,
-        page_size: int = 20
-    ) -> Tuple[List[Node], int]:
-        """
-        Get all images for a project with pagination
-        """
-        # Get total count
-        count_result = await db.execute(
-            select(Node)
-            .where(Node.project_id == project_id)
-        )
-        total = len(count_result.scalars().all())
-        
-        # Get paginated results
-        result = await db.execute(
-            select(Node)
-            .where(Node.project_id == project_id)
-            .order_by(desc(Node.created_at))
-            .offset((page - 1) * page_size)
-            .limit(page_size)
-        )
-        
-        images = result.scalars().all()
-        return images, total
-        
     @staticmethod
     async def get_root_nodes(
         db: AsyncSession,

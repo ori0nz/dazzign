@@ -5,7 +5,7 @@ from fastapi.responses import JSONResponse
 import time
 import uvicorn
 
-from app.api.endpoints import images
+from app.api.endpoints import node_router, image_router, text_router
 from app.db.init_db import init_db
 from app.config import settings
 
@@ -33,7 +33,9 @@ app.add_middleware(
 )
 
 # Register routers
-app.include_router(images.router, prefix="/image", tags=["images"])
+app.include_router(node_router, prefix="/node", tags=["node"])
+app.include_router(image_router, prefix="/image_gen", tags=["image_gen"])
+app.include_router(text_router, prefix="/text_gen", tags=["text_gen"])
 
 # Add request timing middleware
 @app.middleware("http")

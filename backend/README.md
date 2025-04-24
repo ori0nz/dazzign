@@ -140,12 +140,18 @@ python -m scripts.reset_db
 
 ## 📡 API Endpoints
 
-- **POST** `/image/generate` - Generate a new image based on prompt
-- **POST** `/image/text-to-image` - Convert free-form text to structured attributes
-- **GET** `/image/:id` - Get a single image by ID
-- **GET** `/image/:id/lineage` - Get the ancestry and descendants of an image
-- **GET** `/image/root/list` - List all root images (with no parent)
-- **GET** `/project/:id/images` - Get all images for a project
+The API is divided into three main areas:
+
+### Node Endpoints (prefix: `/node`)
+- **GET** `/node/{image_id}` - Get a single image by ID
+- **GET** `/node/{image_id}/lineage` - Get ancestry and descendants of an image
+- **GET** `/node/root/list` - List all root images (with no parent)
+
+### Image Generation Endpoints (prefix: `/image_gen`)
+- **POST** `/image_gen/generate` - Generate a new image based on prompt
+
+### Text Generation Endpoints (prefix: `/text_gen`)
+- **POST** `/text_gen/text-to-image` - Convert free-form text to structured attributes
 
 ## 📁 Project Structure
 
@@ -159,18 +165,24 @@ python -m scripts.reset_db
 │   ├── schemas/               # Pydantic schemas
 │   │   ├── __init__.py        # Re-exports all schema models
 │   │   ├── image_base.py      # Base schemas (ImageNodeBase, ImageNodeCreate, ImageNode)
-│   │   ├── image_request.py   # Request schemas (ImageGenerateRequest, TextToImageRequest)
-│   │   ├── image_response.py  # Response schemas (TextToImageResponse, ImageLineage, RootImages)
+│   │   ├── image_schemas.py   # Image generation schemas
+│   │   ├── node_schemas.py    # Node-related schemas
+│   │   ├── text_schemas.py    # Text-related schemas
 │   │   └── design_attributes.py # PC case design attributes schema
 │   ├── api/                   # API routes
 │   │   └── endpoints/
-│   │       └── images.py      # Image endpoints
-│   │       └── projects.py    # Project endpoints
+│   │       ├── node_endpoints.py      # Node/DB retrieval endpoints
+│   │       ├── image_gen_endpoints.py # Image generation endpoints
+│   │       └── text_gen_endpoints.py  # Text-to-image endpoints
 │   ├── db/                    # Database utilities
 │   │   ├── session.py         # DB session setup
 │   │   └── init_db.py         # DB initialization
 │   └── services/              # Business logic
-│       └── image_service.py   # Image generation/management
+│       ├── __init__.py            # Service exports
+│       ├── facade_service.py      # Service facade (for backward compatibility)
+│       ├── node_service.py        # Node management service
+│       ├── image_gen_service.py   # Image generation service
+│       └── text_gen_service.py    # Text processing service
 ├── scripts/                   # Utility scripts
 │   └── reset_db.py            # DB reset script
 ├── tests/                     # Test files
@@ -183,15 +195,17 @@ python -m scripts.reset_db
 
 ## 📋 Feature Overview
 
-### Image Generation
+### Node Management
+- Database storage and retrieval of image nodes
+- Hierarchical structure with parent-child relationships
+- Lineage tracking for image evolution
 
+### Image Generation
 - Generate PC case design images from text prompts
-- Support for structured attributes through LLM processing
-- Maintain lineage relationships between images
+- Maintain relationship between generated images
 - Root image listing for easy navigation
 
-### Text-to-Image Attribute Extraction
-
+### Text Processing
 - Extract structured attributes from free-form text descriptions:
   - Color: Primary and accent colors
   - Style: Overall design style (Minimalist, Futuristic, etc.)
@@ -202,7 +216,6 @@ python -m scripts.reset_db
   - Features: Additional functionality
 
 ### Database and Development
-
 - PostgreSQL 17.4 for robust data storage
 - FastAPI for high-performance API
 - Docker containerization for easy deployment 

@@ -11,7 +11,7 @@ load_dotenv()
 
 logger = logging.getLogger(__name__)
 
-class TextToImageService:
+class TextGenService:
     """Service for handling text-to-image conversions using LLM"""
     
     # OpenAI API credentials
@@ -27,39 +27,39 @@ class TextToImageService:
         # LLM system prompt for attribute extraction
         system_prompt = """You are an AI assistant whose job is to extract structured PC case design attributes from a free‑form user description.
 
-                        Define each attribute as follows:
-                        - color: The primary and accent colors the user wants for the case.
-                        - style: The overall design style, such as "Minimalist," "Futuristic," "Retro," "Industrial," "Gaming," etc.
-                        - shape: The silhouette or contour of the case, e.g. "Rectangular," "Curved," "Angled," "Rounded," "Asymmetric."
-                        - material: The main construction material, such as "Aluminum," "Tempered Glass," "Steel," "Plastic," "Carbon Fiber."
-                        - ventilation: The cooling or airflow features, e.g. "Mesh Front," "Side Vents," "Top Vent."
-                        - lighting: Any lighting elements, for example "ARGB Fans," "LED Strips," "Underglow."
-                        - features: Additional functional features like "Tool‑less Design," "Vertical GPU Mount," "Cable Management," "Modular Panels," "Dust Filters," "Silent Operation."
+Define each attribute as follows:
+- color: The primary and accent colors the user wants for the case.
+- style: The overall design style, such as "Minimalist," "Futuristic," "Retro," "Industrial," "Gaming," etc.
+- shape: The silhouette or contour of the case, e.g. "Rectangular," "Curved," "Angled," "Rounded," "Asymmetric."
+- material: The main construction material, such as "Aluminum," "Tempered Glass," "Steel," "Plastic," "Carbon Fiber."
+- ventilation: The cooling or airflow features, e.g. "Mesh Front," "Side Vents," "Top Vent."
+- lighting: Any lighting elements, for example "ARGB Fans," "LED Strips," "Underglow."
+- features: Additional functional features like "Tool‑less Design," "Vertical GPU Mount," "Cable Management," "Modular Panels," "Dust Filters," "Silent Operation."
 
-                        When you receive a user prompt, you MUST:
-                        1. Map any mentioned design details to the above attributes.
-                        2. Always output each extracted attribute as an **array** of strings, even if there is only one value.
-                        3. Output a single JSON object containing only the keys for attributes you successfully extracted.
-                        4.Omit any attribute entirely if it is not mentioned or cannot be extracted.
-                        5. If you cannot extract any attribute, return an empty JSON object: `{}`.
-                        6.Always represent extracted attribute values in English in the JSON output, regardless of whether the user wrote them in any language.
-                        7. Do NOT output any extra text or explanation—only the JSON object."""
+When you receive a user prompt, you MUST:
+1. Map any mentioned design details to the above attributes.
+2. Always output each extracted attribute as an **array** of strings, even if there is only one value.
+3. Output a single JSON object containing only the keys for attributes you successfully extracted.
+4.Omit any attribute entirely if it is not mentioned or cannot be extracted.
+5. If you cannot extract any attribute, return an empty JSON object: `{}`.
+6.Always represent extracted attribute values in English in the JSON output, regardless of whether the user wrote them in any language.
+7. Do NOT output any extra text or explanation—only the JSON object."""
 
         try:
             # Check if we have OpenAI API access
-            if TextToImageService.API_KEY:
+            if TextGenService.API_KEY:
                 # Make API call to OpenAI
-                attributes_dict = await TextToImageService._call_openai_api(prompt, system_prompt)
+                attributes_dict = await TextGenService._call_openai_api(prompt, system_prompt)
             else:
                 # Fallback to mock extraction if no API key
                 logger.warning("No OpenAI API key found, using mock extraction")
-                attributes_dict = TextToImageService._mock_extract_attributes(prompt)
+                attributes_dict = TextGenService._mock_extract_attributes(prompt)
             
             # Convert the dictionary to our Pydantic model
             attributes = PCCaseAttributes(**attributes_dict)
             
             # Generate a structured prompt
-            structured_prompt = TextToImageService._create_structured_prompt(prompt, attributes)
+            structured_prompt = TextGenService._create_structured_prompt(prompt, attributes)
             
             return TextToImageResponse(
                 prompt=prompt,
@@ -83,16 +83,16 @@ class TextToImageService:
         try:
             async with httpx.AsyncClient() as client:
                 response = await client.post(
-                    TextToImageService.API_URL,
+                    TextGenService.API_URL,
                     json={
-                        "model": TextToImageService.MODEL,
+                        "model": TextGenService.MODEL,
                         "messages": [
                             {"role": "system", "content": system_prompt},
                             {"role": "user", "content": prompt}
                         ],
                         "temperature": 0.1,
                     },
-                    headers={"Authorization": f"Bearer {TextToImageService.API_KEY}"},
+                    headers={"Authorization": f"Bearer {TextGenService.API_KEY}"},
                     timeout=30.0
                 )
                 

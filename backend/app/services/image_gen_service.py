@@ -2,11 +2,11 @@ import logging
 import base64
 import os
 from typing import Optional
-from app.schemas import ImageNodeCreate
+from app.schemas import NodeCreate
 
 logger = logging.getLogger(__name__)
 
-class GenerationService:
+class ImageGenService:
     """Service for handling image generation using AI models"""
     
     @staticmethod
@@ -32,11 +32,11 @@ class GenerationService:
             logger.info(f"Would call image generation API with prompt: {generation_prompt}")
             
             # Return mock image
-            return GenerationService._get_mock_image()
+            return ImageGenService._get_mock_image()
         else:
             # No API credentials, return mock image
             logger.warning("No image generation API credentials found, returning mock image")
-            return GenerationService._get_mock_image()
+            return ImageGenService._get_mock_image()
     
     @staticmethod
     async def prepare_generation_data(
@@ -45,7 +45,7 @@ class GenerationService:
         structured_prompt: Optional[str] = None,
         parent_id: Optional[int] = None,
         project_id: int = 1
-    ) -> ImageNodeCreate:
+    ) -> NodeCreate:
         """
         Prepare data for image generation and database storage
         """

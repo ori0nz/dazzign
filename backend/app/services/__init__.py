@@ -1,5 +1,5 @@
 # Re-export services for easier imports
-from app.services.image_service import ImageService
-from app.services.text_to_image_service import TextToImageService
+from app.services.facade_service import FacadeService # Keep for backward compatibility
+from app.services.text_gen_service import TextGenService
 from app.services.node_service import NodeService
-from app.services.generation_service import GenerationService 
+from app.services.image_gen_service import ImageGenService 

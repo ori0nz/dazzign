@@ -1,13 +1,13 @@
 import { ImageNode } from '../models/types';
 import { MOCK_IMAGES } from '../data/mockData';
 
-const API_BASE = 'http://localhost:8000/node';
+const API_BASE = 'http://localhost:8000';
 
 class ImageService {
   // Get all root images (those with no parent)
   async getRootImages(): Promise<ImageNode[]> {
     try {
-      const response = await fetch(`${API_BASE}/root`);
+      const response = await fetch(`${API_BASE}/node/root`);
       if (!response.ok) {
         throw new Error('Failed to fetch root images');
       }
@@ -24,7 +24,7 @@ class ImageService {
   // Get a single image by ID
   async getImageById(id: number): Promise<ImageNode | null> {
     try {
-      const response = await fetch(`${API_BASE}/${id}`);
+      const response = await fetch(`${API_BASE}/node/${id}`);
       if (!response.ok) {
         if (response.status === 404) {
           return null;
@@ -41,7 +41,7 @@ class ImageService {
   // Get image lineage (all descendants)
   async getImageLineage(id: number): Promise<ImageNode[]> {
     try {
-      const response = await fetch(`${API_BASE}/${id}/tree`);
+      const response = await fetch(`${API_BASE}/node/${id}/tree`);
       if (!response.ok) {
         throw new Error('Failed to fetch image lineage');
       }
@@ -62,7 +62,7 @@ class ImageService {
     // Generate specifications from prompt
     async generateSpecs(prompt: string): Promise<Record<string, string[]>> {
       try {
-        const response = await fetch(`${API_BASE}/text-gen`, {
+        const response = await fetch(`${API_BASE}/text-gen/to-spec`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -73,16 +73,17 @@ class ImageService {
         if (!response.ok) {
           throw new Error('Failed to generate specifications');
         }
-        
-        return response.json();
+        const data = await response.json();
+        console.log("Generated specs response:", data.attributes);
+        return data.attributes;
       } catch (error) {
         console.warn('Failed to fetch from API, using mock data:', error);
         // Return some mock specifications based on the prompt
         return {
-          style: ['Modern', 'Minimalist'],
-          material: ['Metal', 'Glass'],
-          lighting: ['Natural', 'Ambient'],
-          features: ['Clean lines', 'Simple geometry'],
+          style: ['mock-Modern', 'mock-Minimalist'],
+          material: ['mock-Metal', 'mock-Glass'],
+          lighting: ['mock-Natural', 'mock-Ambient'],
+          features: ['mock-Clean lines', 'mock-Simple geometry'],
         };
       }
     }
@@ -125,6 +126,7 @@ class ImageService {
         specJson: data.specs,
         requestParams: { width: 1024, height: 1024 },
         imagePath: MOCK_IMAGES[Math.floor(Math.random() * MOCK_IMAGES.length)].imagePath,
+        imageBase64: '',
         actionType: data.parentId ? 'edit' : 'generate',
         createdAt: new Date().toISOString(),
       };

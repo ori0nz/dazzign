@@ -10,13 +10,16 @@ const SAMPLE_IMAGES = [
 ];
 
 export const SPEC_CATEGORIES: SpecCategory[] = [
-  { id: 'style', name: 'Style', icon: '🎭', color: 'bg-green-100 text-green-800' },
-  { id: 'material', name: 'Material', icon: '🪵', color: 'bg-amber-100 text-amber-800' },
+  { id: 'style', name: 'Style / Theme', icon: '🎭', color: 'bg-green-100 text-green-800' },
+  { id: 'shape', name: 'Shape / Form', icon: '📐', color: 'bg-slate-100 text-slate-800' },
+  { id: 'color', name: 'Color Scheme', icon: '🎨', color: 'bg-pink-100 text-pink-800' },
+  { id: 'material', name: 'Materials', icon: '🪵', color: 'bg-amber-100 text-amber-800' },
+  { id: 'ventilation', name: 'Ventilation', icon: '🌬️', color: 'bg-cyan-100 text-cyan-800' },
   { id: 'lighting', name: 'Lighting', icon: '💡', color: 'bg-blue-100 text-blue-800' },
-  { id: 'features', name: 'Features', icon: '💧', color: 'bg-blue-100 text-blue-800' },
-  { id: 'color', name: 'Color', icon: '🎨', color: 'bg-green-100 text-green-800' },
-  { id: 'shape', name: 'Shape', icon: '📐', color: 'bg-slate-100 text-slate-800' },
+  { id: 'features', name: 'Features / Details', icon: '⚙️', color: 'bg-purple-100 text-purple-800' },
+  { id: 'environment', name: 'Environment / Setting', icon: '🌆', color: 'bg-yellow-100 text-yellow-800' },
 ];
+
 
 // Generate some mock data for images
 export const MOCK_IMAGES: ImageNode[] = [

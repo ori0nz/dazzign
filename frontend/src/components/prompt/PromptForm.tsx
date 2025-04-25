@@ -41,7 +41,13 @@ const PromptForm: React.FC<PromptFormProps> = ({
     setIsGeneratingSpecs(true);
     try {
       const generatedSpecs = await imageService.generateSpecs(prompt);
-      setSpecs(generatedSpecs);
+      // Ensure all values are arrays
+      const sanitizedSpecs = Object.entries(generatedSpecs).reduce((acc, [key, value]) => {
+        acc[key] = Array.isArray(value) ? value : (value ? [value] : []);
+        return acc;
+      }, {} as Record<string, string[]>);
+      console.log("Generated specs:", sanitizedSpecs);
+      setSpecs(sanitizedSpecs);
     } catch (error) {
       console.error('Failed to generate specifications:', error);
     } finally {
@@ -71,27 +77,30 @@ const PromptForm: React.FC<PromptFormProps> = ({
   };
 
   // Generate a preview prompt with all the specs
-  const generatePreviewPrompt = () => {
-    const allTags: Tag[] = [];
+  // const generatePreviewPrompt = () => {
+  //   const allTags: Tag[] = [];
     
-    Object.entries(specs).forEach(([categoryId, values]) => {
-      values.forEach(value => {
-        allTags.push({ category: categoryId, value });
-      });
-    });
+  //   Object.entries(specs).forEach(([categoryId, values]) => {
+  //     // Ensure values is an array before calling forEach
+  //     if (Array.isArray(values)) {
+  //       values.forEach(value => {
+  //         allTags.push({ category: categoryId, value });
+  //       });
+  //     }
+  //   });
+  //   console.log("All tags:", allTags);
+  //   if (allTags.length === 0) return prompt;
     
-    if (allTags.length === 0) return prompt;
+  //   const specsText = Object.entries(specs)
+  //     .filter(([, values]) => Array.isArray(values) && values.length > 0)
+  //     .map(([categoryId, values]) => {
+  //       const category = SPEC_CATEGORIES.find(c => c.id === categoryId);
+  //       return `${values.join(', ')} ${category?.name.toLowerCase()}`;
+  //     })
+  //     .join('; ');
     
-    const specsText = Object.entries(specs)
-      .filter(([_, values]) => values.length > 0)
-      .map(([categoryId, values]) => {
-        const category = SPEC_CATEGORIES.find(c => c.id === categoryId);
-        return `${values.join(', ')} ${category?.name.toLowerCase()}`;
-      })
-      .join('; ');
-    
-    return `A high-resolution render of ${prompt}${prompt ? '; ' : ''}${specsText}.`;
-  };
+  //   return `A high-resolution render of ${prompt}${prompt ? '; ' : ''}${specsText}.`;
+  // };
 
   return (
     <form onSubmit={handleSubmit} className="mx-auto max-w-3xl">
@@ -124,19 +133,19 @@ const PromptForm: React.FC<PromptFormProps> = ({
         <TagInput
           key={category.id}
           category={category}
-          values={specs[category.id]}
+          values={specs[category.id] || []}
           onChange={(values) => handleSpecChange(category.id, values)}
         />
       ))}
-
-      <div className="mb-6">
+      
+      {/* <div className="mb-6">
         <label htmlFor="preview" className="mb-2 block text-lg font-medium text-gray-900">
           Preview:
         </label>
         <div className="rounded-lg border border-gray-300 bg-gray-50 p-4 text-gray-700">
           {generatePreviewPrompt()}
         </div>
-      </div>
+      </div> */}
 
       <div className="mb-6">
         <label htmlFor="negative-prompt" className="mb-2 flex items-center text-lg font-medium text-gray-900">

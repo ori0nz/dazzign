@@ -23,7 +23,39 @@ Users can generate PC case design images through text descriptions, with designs
 - Docker and Docker Compose
 - uv package manager
 
-### Setup Database
+### Running with Docker (Recommended)
+
+The easiest way to run the entire application is using Docker Compose:
+
+1. Make sure you have Docker and Docker Compose installed
+2. Create a `.env` file from the included `.env.example` (or use as is)
+3. Run the following command to build and start all containers:
+
+```bash
+# Navigate to the backend directory
+cd backend
+
+# Build and start all services (in background)
+docker-compose up -d
+
+# To view logs
+docker-compose logs -f
+```
+
+This will:
+- Build and start a PostgreSQL 17.4 container
+- Build and start the FastAPI backend container
+- Set up all environment variables from .env
+- Mount volumes for code and data persistence
+
+You can access the API at http://localhost:8000 and the documentation at http://localhost:8000/docs
+
+To stop the application:
+```bash
+docker-compose down
+```
+
+### Setup Database Only
 
 #### Using Docker Compose (Recommended)
 

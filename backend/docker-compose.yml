@@ -1,6 +1,31 @@
 version: '3.8'
 
 services:
+  backend:
+    container_name: dazzign-backend
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - "${PORT:-8000}:8000"
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER:-postgres}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres}
+      - POSTGRES_DB=${POSTGRES_DB:-dazzign}
+      - DB_HOST=db
+      - DB_PORT=5432
+      - USE_FAKE_DATA=${USE_FAKE_DATA:-True}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENAI_MODEL=${OPENAI_MODEL:-gpt-4.1-nano}
+      - STABILITY_AI_API_KEY=${STABILITY_AI_API_KEY}
+      - AWS_NOVA_API_KEY=${AWS_NOVA_API_KEY}
+    volumes:
+      - .:/app
+    depends_on:
+      db:
+        condition: service_healthy
+
   db:
     container_name: dazzign-db
     build:

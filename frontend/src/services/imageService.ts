@@ -46,7 +46,7 @@ class ImageService {
         throw new Error('Failed to fetch image lineage');
       }
       const data = await response.json();
-      console.log("data", datass);
+      // console.log("data", data);
       return data;
     } catch (error) {
       console.warn('Failed to fetch from API, using mock data:', error);
@@ -58,6 +58,34 @@ class ImageService {
       return getDescendants(id);
     }
   }
+
+    // Generate specifications from prompt
+    async generateSpecs(prompt: string): Promise<Record<string, string[]>> {
+      try {
+        const response = await fetch(`${API_BASE}/text-gen`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ prompt }),
+        });
+        
+        if (!response.ok) {
+          throw new Error('Failed to generate specifications');
+        }
+        
+        return response.json();
+      } catch (error) {
+        console.warn('Failed to fetch from API, using mock data:', error);
+        // Return some mock specifications based on the prompt
+        return {
+          style: ['Modern', 'Minimalist'],
+          material: ['Metal', 'Glass'],
+          lighting: ['Natural', 'Ambient'],
+          features: ['Clean lines', 'Simple geometry'],
+        };
+      }
+    }
 
   // Create a new image
   async generateImage(data: {
@@ -89,12 +117,15 @@ class ImageService {
       console.warn('Failed to fetch from API, using mock data:', error);
       // Create a new mock image
       const newImage: ImageNode = {
-        id: MOCK_IMAGES.length + 1,
-        url: 'https://picsum.photos/400/400', // Placeholder image
+        id: Math.max(...MOCK_IMAGES.map(img => img.id)) + 1,
+        isRoot: !data.parentId,
+        parentId: data.parentId,
         prompt: data.prompt,
         negativePrompt: data.negativePrompt,
-        specs: data.specs,
-        parentId: data.parentId,
+        specJson: data.specs,
+        requestParams: { width: 1024, height: 1024 },
+        imagePath: MOCK_IMAGES[Math.floor(Math.random() * MOCK_IMAGES.length)].imagePath,
+        actionType: data.parentId ? 'edit' : 'generate',
         createdAt: new Date().toISOString(),
       };
       MOCK_IMAGES.push(newImage);

@@ -1,22 +1,29 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import Home from './pages/Home';
 import PromptInput from './pages/PromptInput';
 import ImagePreviewPage from './pages/ImagePreviewPage';
 import LineageView from './pages/LineageView';
+import LanguageSwitcher from './components/ui/LanguageSwitcher';
 
 function App() {
+  const { t } = useTranslation();
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Router>
-        <header className="border-b border-gray-200 bg-white py-4 shadow-sm">
+        <header className="relative border-b border-gray-200 bg-white py-4 shadow-sm">
           <div className="container mx-auto flex items-center px-4">
             <a href="/" className="text-xl font-bold text-indigo-600">
               ImageFlow
             </a>
             <div className="ml-8 hidden items-center space-x-6 text-sm font-medium md:flex">
-              <a href="/" className="text-gray-900 hover:text-indigo-600">Projects</a>
-              <a href="/create" className="text-gray-500 hover:text-indigo-600">Create</a>
+              <a href="/" className="text-gray-900 hover:text-indigo-600">{t('common.projects')}</a>
+              <a href="/create" className="text-gray-500 hover:text-indigo-600">{t('common.create')}</a>
+            </div>
+            <div className="absolute right-4 top-1/2 -translate-y-1/2">
+              <LanguageSwitcher />
             </div>
           </div>
         </header>

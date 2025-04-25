@@ -1,0 +1,44 @@
+{
+  "common": {
+    "projects": "Projects",
+    "create": "Create",
+    "loading": "Loading...",
+    "error": "Error",
+    "back": "Back",
+    "returnHome": "Return Home"
+  },
+  "home": {
+    "title": "Image Projects",
+    "newImage": "New Image",
+    "noImages": "No images yet",
+    "createFirst": "Create Your First Image",
+    "startNew": "Start a new image generation"
+  },
+  "prompt": {
+    "createTitle": "Create New Image",
+    "editTitle": "Edit Image",
+    "createDesc": "Enter a prompt and specifications to generate a new image.",
+    "editDesc": "Modify the prompt and specifications to create a variation of the selected image.",
+    "parentImage": "Parent Image",
+    "originalPrompt": "Original Prompt",
+    "negativePrompt": "Negative Prompt",
+    "mainPrompt": "Main Prompt",
+    "promptPlaceholder": "Describe what you want to generate...",
+    "generateSpecs": "Generate Specifications",
+    "generating": "Generating...",
+    "preview": "Preview",
+    "generatingImage": "Generating Image...",
+    "parentNotFound": "Parent image not found",
+    "loadError": "Failed to load parent image",
+    "generateError": "Failed to generate image. Please try again."
+  },
+  "lineage": {
+    "title": "Image Lineage",
+    "history": "Generation History",
+    "noData": "No image data available.",
+    "noImageId": "No image ID provided",
+    "invalidImageId": "Invalid image ID",
+    "noImagesFound": "No images found for lineage with ID {{id}}",
+    "loadError": "Failed to load image lineage. Please try again later."
+  }
+}

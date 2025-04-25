@@ -42,7 +42,8 @@ const ImagePreview: React.FC<ImagePreviewProps> = ({
           {/* Image */}
           <div className="aspect-square w-full overflow-hidden bg-gray-100">
             <img
-              src={image.imagePath}
+              // src={image.imagePath}
+              src={`data:image/jpg;base64,${image.imageBase64}`}
               alt={image.prompt}
               className="h-full w-full object-cover object-center"
             />
@@ -91,7 +92,7 @@ const ImagePreview: React.FC<ImagePreviewProps> = ({
           <div className="mb-6">
             <h2 className="mb-2 text-sm font-medium text-gray-500">SPECIFICATIONS</h2>
             <div className="flex flex-wrap gap-2">
-              {Object.entries(image.specJson).flatMap(([categoryId, values]) =>
+              {image.specJson && Object.entries(image.specJson).flatMap(([categoryId, values]) =>
                 values.map((value, index) => {
                   const category = getCategoryById(categoryId);
                   return (

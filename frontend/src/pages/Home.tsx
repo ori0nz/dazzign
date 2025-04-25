@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { ImageNode } from '../models/types';
 import { imageService } from '../services/imageService';
 import ImageCard from '../components/image/ImageCard';
@@ -9,6 +10,7 @@ const Home: React.FC = () => {
   const [rootImages, setRootImages] = useState<ImageNode[]>([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   useEffect(() => {
     const loadImages = async () => {
@@ -37,7 +39,7 @@ const Home: React.FC = () => {
   if (loading) {
     return (
       <div className="flex h-screen items-center justify-center">
-        <div className="text-lg">Loading...</div>
+        <div className="text-lg">{t('common.loading')}</div>
       </div>
     );
   }
@@ -45,27 +47,27 @@ const Home: React.FC = () => {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8 flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-gray-900">Image Projects</h1>
+        <h1 className="text-3xl font-bold text-gray-900">{t('home.title')}</h1>
         <Button 
           variant="primary" 
           size="lg"
           onClick={handleNewImage}
           className="transition-transform hover:scale-105"
         >
-          New Image
+          {t('home.newImage')}
         </Button>
       </div>
 
       {rootImages.length === 0 ? (
         <div className="mt-20 flex flex-col items-center justify-center">
-          <div className="mb-6 text-xl text-gray-600">No images yet</div>
+          <div className="mb-6 text-xl text-gray-600">{t('home.noImages')}</div>
           <Button 
             variant="primary" 
             size="lg" 
             onClick={handleNewImage}
             className="transition-transform hover:scale-105"
           >
-            Create Your First Image
+            {t('home.createFirst')}
           </Button>
         </div>
       ) : (
@@ -87,8 +89,8 @@ const Home: React.FC = () => {
                 <line x1="5" y1="12" x2="19" y2="12"></line>
               </svg>
             </div>
-            <p className="text-sm font-medium text-gray-900">Create New Image</p>
-            <p className="mt-1 text-xs text-gray-500">Start a new image generation</p>
+            <p className="text-sm font-medium text-gray-900">{t('home.newImage')}</p>
+            <p className="mt-1 text-xs text-gray-500">{t('home.startNew')}</p>
           </div>
         </div>
       )}

@@ -4,14 +4,14 @@ import { SpecCategory } from '../../models/types';
 
 interface TagInputProps {
   category: SpecCategory;
-  values: string[];
+  values?: string[];
   onChange: (values: string[]) => void;
   placeholder?: string;
 }
 
 const TagInput: React.FC<TagInputProps> = ({
   category,
-  values,
+  values = [], // Provide default empty array
   onChange,
   placeholder = 'Type and press Enter...',
 }) => {

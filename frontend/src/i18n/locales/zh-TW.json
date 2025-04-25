@@ -1,0 +1,44 @@
+{
+  "common": {
+    "projects": "專案",
+    "create": "建立",
+    "loading": "載入中...",
+    "error": "錯誤",
+    "back": "返回",
+    "returnHome": "返回首頁"
+  },
+  "home": {
+    "title": "圖片專案",
+    "newImage": "新增圖片",
+    "noImages": "尚無圖片",
+    "createFirst": "建立您的第一張圖片",
+    "startNew": "開始新的圖片生成"
+  },
+  "prompt": {
+    "createTitle": "建立新圖片",
+    "editTitle": "編輯圖片",
+    "createDesc": "輸入提示詞和規格以生成新圖片",
+    "editDesc": "修改提示詞和規格以創建所選圖片的變體",
+    "parentImage": "原始圖片",
+    "originalPrompt": "原始提示詞",
+    "negativePrompt": "負面提示詞",
+    "mainPrompt": "主要提示詞",
+    "promptPlaceholder": "描述您想要生成的內容...",
+    "generateSpecs": "生成規格",
+    "generating": "生成中...",
+    "preview": "預覽",
+    "generatingImage": "生成圖片中...",
+    "parentNotFound": "找不到原始圖片",
+    "loadError": "載入原始圖片失敗",
+    "generateError": "生成圖片失敗，請重試"
+  },
+  "lineage": {
+    "title": "圖片譜系",
+    "history": "生成歷史",
+    "noData": "無可用的圖片資料",
+    "noImageId": "未提供圖片ID",
+    "invalidImageId": "無效的圖片ID",
+    "noImagesFound": "找不到ID為 {{id}} 的圖片譜系",
+    "loadError": "載入圖片譜系失敗，請稍後重試"
+  }
+}

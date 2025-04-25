@@ -3,6 +3,7 @@ import Button from '../ui/Button';
 import TagInput from './TagInput';
 import { SPEC_CATEGORIES } from '../../data/mockData';
 import { Tag } from '../../models/types';
+import { imageService } from '../../services/imageService';
 
 interface PromptFormProps {
   initialPrompt?: string;
@@ -32,6 +33,25 @@ const PromptForm: React.FC<PromptFormProps> = ({
       return acc;
     }, {} as Record<string, string[]>)
   );
+  const [isGeneratingSpecs, setIsGeneratingSpecs] = useState(false);
+
+  const generateSpecsFromPrompt = async () => {
+    if (!prompt.trim()) return;
+    
+    setIsGeneratingSpecs(true);
+    try {
+      const generatedSpecs = await imageService.generateSpecs(prompt);
+      setSpecs(generatedSpecs);
+    } catch (error) {
+      console.error('Failed to generate specifications:', error);
+    } finally {
+      setIsGeneratingSpecs(false);
+    }
+  };
+
+  const handlePromptChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setPrompt(e.target.value);
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -79,14 +99,25 @@ const PromptForm: React.FC<PromptFormProps> = ({
         <label htmlFor="prompt" className="mb-2 block text-lg font-medium text-gray-900">
           Main Prompt:
         </label>
-        <textarea
-          id="prompt"
-          value={prompt}
-          onChange={(e) => setPrompt(e.target.value)}
-          className="block w-full rounded-lg border border-gray-300 bg-white p-2.5 text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
-          placeholder="Describe what you want to generate..."
-          rows={3}
-        />
+        <div className="space-y-2">
+          <textarea
+            id="prompt"
+            value={prompt}
+            onChange={handlePromptChange}
+            className="block w-full rounded-lg border border-gray-300 bg-white p-2.5 text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+            placeholder="Describe what you want to generate..."
+            rows={3}
+          />
+          <Button
+            type="button"
+            variant="outline"
+            onClick={generateSpecsFromPrompt}
+            disabled={!prompt.trim() || isGeneratingSpecs}
+            className="w-full sm:w-auto"
+          >
+            {isGeneratingSpecs ? 'Generating...' : 'Generate Specifications'}
+          </Button>
+        </div>
       </div>
 
       {SPEC_CATEGORIES.map((category) => (

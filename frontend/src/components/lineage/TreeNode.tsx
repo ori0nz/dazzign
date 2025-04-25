@@ -28,7 +28,8 @@ const TreeNode: React.FC<TreeNodeProps> = ({
       >
         <div className="relative h-16 w-16 overflow-hidden rounded">
           <img 
-            src={node.node.imagePath} 
+            // src={node.node.imagePath} 
+            src={`data:image/jpg;base64,${node.node.imageBase64}`}
             alt={node.node.prompt} 
             className="h-full w-full object-cover"
           />

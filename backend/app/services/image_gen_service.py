@@ -1,44 +1,97 @@
 import logging
 import base64
 import os
-from typing import Optional
+from typing import Optional, Dict, Any, Literal
 from app.schemas import NodeBase, PCCaseAttributes
 import random
+from enum import Enum
+
+from app.services.stability_ai_service import StabilityAIService
+from app.services.aws_nova_service import AWSNovaService
 
 logger = logging.getLogger(__name__)
+
+class ImageProvider(str, Enum):
+    STABILITY_AI = "stability_ai"
+    AWS_NOVA = "aws_nova"  # Placeholder for future implementation
+    MOCK = "mock"
 
 class ImageGenService:
     """Service for handling image generation using AI models"""
     
-    @staticmethod
-    async def generate_image(prompt: str, structured_prompt: Optional[str] = None) -> str:
+    def __init__(self):
+        self.stability_service = StabilityAIService()
+        self.nova_service = AWSNovaService()
+    
+    async def generate_image(self, prompt: str, structured_prompt: Optional[str] = None, 
+                             negative_prompt: Optional[str] = None, 
+                             seed: Optional[int] = 202,
+                             output_format: Optional[Literal["webp", "jpeg", "png"]] = "jpeg",
+                             provider: Optional[ImageProvider] = None,
+                             model: Optional[str] = None) -> str:
         """
         Generate an image based on the provided prompt
         Returns base64 encoded image data
         
-        In a real implementation, this would call a Stable Diffusion or similar model
+        Args:
+            prompt: The main text prompt
+            structured_prompt: Optional pre-structured prompt that overrides the main prompt
+            negative_prompt: Text to guide what should not appear in the image
+            seed: Random seed for reproducibility
+            output_format: Image format (webp, jpeg, png)
+            provider: Explicitly specify which provider to use
+            model: The model to use for generation
+        
+        Returns:
+            Base64 encoded image data
         """
         # Use structured prompt if available, otherwise use original prompt
         generation_prompt = structured_prompt or prompt
         
-        # For now, this is just a placeholder that returns a mock image
-        # In a real implementation, this would call an AI model API
-        
-        # Check if we have image generation API credentials
-        api_key = os.environ.get("IMAGE_GEN_API_KEY")
+        # Check if USE_FAKE_DATA is true - this overrides any provider setting
         use_fake_data = os.environ.get("USE_FAKE_DATA", "True").lower() == "true"
+        if use_fake_data:
+            logger.info("USE_FAKE_DATA is true, forcing mock provider")
+            provider = ImageProvider.MOCK
         
-        if not use_fake_data:
-            # In a real implementation, make API call to image generation service
-            # For now, just log that we would call the API
-            logger.info(f"Would call image generation API with prompt: {generation_prompt}")
-            
-            # Return mock image
-            return ImageGenService._get_mock_image()
-        else:
-            # No API credentials, return mock image
-            logger.warning("No image generation API credentials found, returning mock image")
-            return ImageGenService._get_mock_image()
+        if provider == ImageProvider.STABILITY_AI:
+            try:
+                result = await self.stability_service.generate_image(
+                    prompt=generation_prompt,
+                    negative_prompt=negative_prompt,
+                    aspect_ratio="1:1",
+                    style_preset="3d-model",
+                    seed=seed,
+                    output_format=output_format,
+                    model="core"
+                )
+                if result and "image" in result:
+                    logger.info(f"result generated with Stability AI: {result}")
+                    return result["image"]
+                logger.error("Failed to generate image with Stability AI")
+            except Exception as e:
+                logger.error(f"Error generating image with Stability AI: {str(e)}")
+                
+        elif provider == ImageProvider.AWS_NOVA:
+            try:
+                result = await self.nova_service.generate_image(
+                    prompt=generation_prompt,
+                    negative_prompt=negative_prompt,
+                    aspect_ratio="1:1",
+                    style_preset="3d-model",
+                    seed=seed,
+                    output_format=output_format,
+                    model=model
+                )
+                if result and "image" in result:
+                    return result["image"]
+                logger.error("Failed to generate image with AWS Nova")
+            except Exception as e:
+                logger.error(f"Error generating image with AWS Nova: {str(e)}")
+                
+        # Default to mock image if provider fails or is set to mock
+        logger.warning("Using mock image for generation")
+        return self._get_mock_image()
     
     @staticmethod
     async def prepare_generation_data(

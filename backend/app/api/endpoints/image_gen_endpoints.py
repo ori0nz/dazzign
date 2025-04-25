@@ -4,6 +4,7 @@ from typing import Any
 from app.db.session import get_db
 from app.schemas import GenerateImageRequest, GenerateImageResponse
 from app.services import NodeService, ImageGenService
+from app.services.image_gen_service import ImageProvider
 import logging
 
 logger = logging.getLogger(__name__)
@@ -40,7 +41,12 @@ async def generate_image(
             "negative_prompt": negative_prompt,
         }
         # Generate the image
-        image_base64 = await ImageGenService.generate_image(structured_prompt)
+        # Provider has 3 options: STABILITY_AI, AWS_NOVA, MOCK
+        image_base64 = await ImageGenService.generate_image(structured_prompt=structured_prompt, 
+                                                            negative_prompt=negative_prompt,
+                                                            output_format="jpeg",
+                                                            seed=202,
+                                                            provider=ImageProvider.STABILITY_AI)
         image_data.image_base64 = image_base64
 
         # Create image in database

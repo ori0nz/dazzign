@@ -5,7 +5,10 @@
     "loading": "Loading...",
     "error": "Error",
     "back": "Back",
-    "returnHome": "Return Home"
+    "returnHome": "Return Home",
+    "confirm": "Confirm",
+    "cancel": "Cancel",
+    "ok": "OK"
   },
   "home": {
     "title": "Image Projects",
@@ -30,7 +33,10 @@
     "generatingImage": "Generating Image...",
     "parentNotFound": "Parent image not found",
     "loadError": "Failed to load parent image",
-    "generateError": "Failed to generate image. Please try again."
+    "generateError": "Failed to generate image. Please try again.",
+    "errorNoSpecs": "Please add at least one specification before generating an image.",
+    "confirmGeneration": "Confirm Generation",
+    "confirmGenerationDesc": "Are you sure you want to generate this image?"
   },
   "lineage": {
     "title": "Image Lineage",

@@ -5,7 +5,10 @@
     "loading": "載入中...",
     "error": "錯誤",
     "back": "返回",
-    "returnHome": "返回首頁"
+    "returnHome": "返回首頁",
+    "confirm": "確認",
+    "cancel": "取消",
+    "ok": "確定"
   },
   "home": {
     "title": "圖片專案",
@@ -30,7 +33,10 @@
     "generatingImage": "生成圖片中...",
     "parentNotFound": "找不到原始圖片",
     "loadError": "載入原始圖片失敗",
-    "generateError": "生成圖片失敗，請重試"
+    "generateError": "生成圖片失敗，請重試",
+    "errorNoSpecs": "請在生成圖片前至少添加一個規格",
+    "confirmGeneration": "確認生成",
+    "confirmGenerationDesc": "您確定要生成這張圖片嗎？"
   },
   "lineage": {
     "title": "圖片譜系",

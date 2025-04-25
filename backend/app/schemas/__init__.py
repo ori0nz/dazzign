@@ -18,3 +18,4 @@ from app.schemas.common.design_attributes import PCCaseAttributes
 
 # Image generation-related models
 from app.schemas.image_gen.request import GenerateImageRequest
+from app.schemas.image_gen.response import GenerateImageResponse

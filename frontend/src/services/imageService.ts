@@ -96,24 +96,32 @@ class ImageService {
     parentId: number | null;
   }): Promise<ImageNode> {
     try {
-      const response = await fetch(`${API_BASE}/images/generate`, {
+      // Check if specs are empty
+      const hasSpecs = Object.values(data.specs).some(values => values.length > 0);
+      if (!hasSpecs) {
+        throw new Error('Specifications cannot be empty');
+      }
+      
+      const response = await fetch(`${API_BASE}/image-gen/generate`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           prompt: data.prompt,
-          negative_prompt: data.negativePrompt,
-          spec_json: data.specs,
-          parent_id: data.parentId,
+          negativePrompt: data.negativePrompt,
+          specJson: data.specs,
+          parentId: data.parentId,
+          actionType: data.parentId ? 'edit' : 'generate',
         }),
       });
       
       if (!response.ok) {
         throw new Error('Failed to generate image');
       }
-      
-      return response.json();
+      const responseData = await response.json();
+      console.log("Generated image response:", responseData);
+      return responseData;
     } catch (error) {
       console.warn('Failed to fetch from API, using mock data:', error);
       // Create a new mock image

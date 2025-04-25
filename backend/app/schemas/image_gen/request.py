@@ -12,7 +12,8 @@ class GenerateImageRequest(BaseModel):
     negative_prompt: Optional[str] = None
     spec_json: PCCaseAttributes
     parent_id: Optional[int] = None
-    
+    action_type: Optional[str] = None
+
     model_config = {
         "alias_generator": to_camel,
         "populate_by_name": True,
@@ -26,7 +27,8 @@ class GenerateImageRequest(BaseModel):
                                 "lighting":  ["Neon glow", "Soft ambient",],
                                 "features":  ["Compact", "Cable management",]
                             },
-                "parentId": None
+                "parentId": None,
+                "actionType": "generate"
             }
         }
     }

@@ -74,8 +74,8 @@ class ImageService {
           throw new Error('Failed to generate specifications');
         }
         const data = await response.json();
-        console.log("Generated specs response:", data.attributes);
-        return data.attributes;
+        // console.log("Generated specs response:", data.attributes);
+        return data;
       } catch (error) {
         console.warn('Failed to fetch from API, using mock data:', error);
         // Return some mock specifications based on the prompt

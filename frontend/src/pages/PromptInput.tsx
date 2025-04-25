@@ -100,12 +100,12 @@ const PromptInput: React.FC = () => {
             <div className="flex-grow">
               <h3 className="mb-2 font-medium text-gray-900">{t('prompt.originalPrompt')}</h3>
               <p className="mb-4 text-gray-700">{parentImage.prompt}</p>
-              {parentImage.negativePrompt && (
+              {/* {parentImage.negativePrompt && (
                 <>
                   <h3 className="mb-2 font-medium text-gray-900">{t('prompt.negativePrompt')}</h3>
                   <p className="mb-4 text-gray-700">{parentImage.negativePrompt}</p>
                 </>
-              )}
+              )} */}
               <div className="flex flex-wrap gap-2">
                 {Object.entries(parentImage.specJson).map(([category, values]) =>
                   values.map((value, index) => (
@@ -126,7 +126,7 @@ const PromptInput: React.FC = () => {
       <PromptForm 
         parentId={parsedParentId}
         initialPrompt={parentImage?.prompt || ''}
-        initialNegativePrompt={parentImage?.negativePrompt || ''}
+        initialStructuredPrompt={parentImage?.negativePrompt || ''}
         initialSpecs={parentImage?.specJson || {}}
         onSubmit={handleSubmit}
       />

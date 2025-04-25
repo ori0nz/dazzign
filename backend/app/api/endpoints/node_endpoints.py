@@ -75,7 +75,7 @@ async def get_node_tree(
             detail=f"node with ID {node_id} not found"
         )
     
-    return NodeTreeResponse(tree=tree)
+    return tree
 
 @router.post("/", response_model=NodeResponse)
 async def create_node(

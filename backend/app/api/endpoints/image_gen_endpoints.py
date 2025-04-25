@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Any
 from app.db.session import get_db
-from app.schemas import ImageGenerateRequest, NodeBase
+from app.schemas import NodeBase, GenerateImageRequest
 from app.services import NodeService, ImageGenService
 import logging
 
@@ -11,7 +11,7 @@ router = APIRouter()
 
 @router.post("/generate", response_model=NodeBase, status_code=201)
 async def generate_image(
-    request: ImageGenerateRequest,
+    request: GenerateImageRequest,
     db: AsyncSession = Depends(get_db)
 ) -> Any:
     """
@@ -22,18 +22,27 @@ async def generate_image(
         image_data = await ImageGenService.prepare_generation_data(
             prompt=request.prompt,
             negative_prompt=request.negative_prompt,
+            spec_json=request.spec_json,
             parent_id=request.parent_id,
-            project_id=1  # Default project ID for now
         )
+
         
+        
+        # Generate the structured prompt
+        structured_prompt = await ImageGenService.create_structured_prompt(request.spec_json)
+
+        image_data.request_params = {
+            "prompt": structured_prompt,
+            "negative_prompt": "text, logo, watermark, signature, blurry, lowres, noisy, grainy",
+        }
         # Generate the image
-        image_base64 = await ImageGenService.generate_image(request.prompt)
-        
+        image_base64 = await ImageGenService.generate_image(structured_prompt)
+        image_data.image_base64 = image_base64
+
         # Create image in database
-        db_image = await NodeService.create_image(
+        db_image = await NodeService.create_node(
             db, 
-            image_data, 
-            image_base64
+            image_data,
         )
         
         return db_image

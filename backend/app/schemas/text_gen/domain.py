@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field
 from typing import Optional, List
-from app.schemas.text_gen.design_attributes import PCCaseAttributes
+from app.schemas.common.design_attributes import PCCaseAttributes
 # Schema for text-to-image response
 class ToSpec(BaseModel):
     prompt: str

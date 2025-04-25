@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field, ConfigDict
 from typing import Optional, Dict, Any, List
-from app.schemas.text_gen.design_attributes import PCCaseAttributes
+from app.schemas.common.design_attributes import PCCaseAttributes
 
 
 def to_camel(string: str) -> str:

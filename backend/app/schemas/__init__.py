@@ -7,11 +7,14 @@ from app.schemas.node.response import NodeResponse, RootNodesResponse, NodeTreeR
 
 
 # Image generation-related models
-from app.schemas.image_schemas import ImageGenerateRequest
+#from app.schemas.image_schemas import ImageGenerateRequest
 
 # Text-related models
 from app.schemas.text_gen.request import ToSpecRequest
 from app.schemas.text_gen.reponse import ToSpecResponse
 
 # Design attributes model
-from app.schemas.text_gen.design_attributes import PCCaseAttributes 
+from app.schemas.common.design_attributes import PCCaseAttributes 
+
+# Image generation-related models
+from app.schemas.image_gen.request import GenerateImageRequest

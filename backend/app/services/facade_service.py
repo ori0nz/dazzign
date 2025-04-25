@@ -2,7 +2,7 @@ from typing import Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.schemas.node.base import NodeBase
 from app.schemas.node.domain import NodeCreate, NodeLineage, RootNodes
-from app.schemas.text_schemas import TextToImageResponse
+from app.schemas.text_gen.reponse import ToSpecResponse
 from app.models.node import Node
 from app.services.image_gen_service import ImageGenService
 from app.services.node_service import NodeService
@@ -39,7 +39,7 @@ class FacadeService:
         return await NodeService.get_root_nodes(db, page, page_size)
     
     @staticmethod
-    async def text_to_image_attributes(prompt: str) -> TextToImageResponse:
+    async def text_to_image_attributes(prompt: str) -> ToSpecResponse:
         """Convert free-form text to structured PC case design attributes using LLM"""
         return await TextGenService.text_to_image_attributes(prompt)
     

@@ -4,7 +4,7 @@ import logging
 import os
 import httpx
 from dotenv import load_dotenv
-from app.schemas import PCCaseAttributes, TextToImageResponse
+from app.schemas.text_gen.domain import PCCaseAttributes, ToSpec
 
 # Load environment variables
 load_dotenv()
@@ -20,7 +20,7 @@ class TextGenService:
     MODEL = os.environ.get("OPENAI_MODEL", "gpt-4o")
     
     @staticmethod
-    async def text_to_image_attributes(prompt: str) -> TextToImageResponse:
+    async def text_to_image_attributes(prompt: str) -> ToSpec:
         """
         Convert free-form text to structured PC case design attributes using OpenAI
         """
@@ -61,7 +61,7 @@ When you receive a user prompt, you MUST:
             # Generate a structured prompt
             structured_prompt = TextGenService._create_structured_prompt(prompt, attributes)
             
-            return TextToImageResponse(
+            return ToSpec(
                 prompt=prompt,
                 attributes=attributes,
                 structured_prompt=structured_prompt
@@ -71,7 +71,7 @@ When you receive a user prompt, you MUST:
             logger.error(f"Error in text_to_image conversion: {e}")
             # Return empty attributes in case of failure
             attributes = PCCaseAttributes()
-            return TextToImageResponse(
+            return ToSpec(
                 prompt=prompt,
                 attributes=attributes,
                 structured_prompt=prompt

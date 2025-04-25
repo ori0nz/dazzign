@@ -10,7 +10,8 @@ from app.schemas.node.response import NodeResponse, RootNodesResponse, NodeTreeR
 from app.schemas.image_schemas import ImageGenerateRequest
 
 # Text-related models
-from app.schemas.text_schemas import TextToImageRequest, TextToImageResponse
+from app.schemas.text_gen.request import ToSpecRequest
+from app.schemas.text_gen.reponse import ToSpecResponse
 
 # Design attributes model
-from app.schemas.design_attributes import PCCaseAttributes 
+from app.schemas.text_gen.design_attributes import PCCaseAttributes 

@@ -1,23 +1,9 @@
 from pydantic import BaseModel, Field
 from typing import Optional, Dict, Any, List
-from app.schemas.design_attributes import PCCaseAttributes
-
-# Schema for text-to-image request
-class TextToImageRequest(BaseModel):
-    prompt: str = Field(..., description="Free-form text description of the desired PC case design")
-    negative_prompt: Optional[str] = None
-    parent_id: Optional[int] = None
-    
-    model_config = {
-        "json_schema_extra": {
-            "example": {
-                "prompt": "I want a sleek black PC case with RGB lighting and good airflow."
-            }
-        }
-    }
+from app.schemas.text_gen.design_attributes import PCCaseAttributes
 
 # Schema for text-to-image response
-class TextToImageResponse(BaseModel):
+class ToSpecResponse(BaseModel):
     prompt: str
     attributes: PCCaseAttributes
     structured_prompt: str = Field(..., description="Structured prompt suitable for image generation")

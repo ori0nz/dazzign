@@ -1,15 +1,15 @@
 from fastapi import APIRouter, HTTPException
 from typing import Any
-from app.schemas import TextToImageRequest, TextToImageResponse
+from app.schemas import ToSpecRequest, ToSpecResponse
 from app.services import TextGenService
 import logging
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
-@router.post("/text-to-image", response_model=TextToImageResponse)
+@router.post("/to-spec", response_model=ToSpecResponse)
 async def text_to_image(
-    request: TextToImageRequest
+    request: ToSpecRequest
 ) -> Any:
     """
     Convert free-form text to structured PC case design attributes

@@ -91,7 +91,8 @@ const PromptInput: React.FC = () => {
           <div className="flex gap-6">
             <div className="h-48 w-48 flex-shrink-0 overflow-hidden rounded-lg">
               <img 
-                src={parentImage.imagePath} 
+                // src={parentImage.imagePath} 
+                src={`data:image/jpg;base64,${parentImage.imageBase64}`}
                 alt={parentImage.prompt}
                 className="h-full w-full object-cover"
               />

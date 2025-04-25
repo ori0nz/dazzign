@@ -34,8 +34,8 @@ app.add_middleware(
 
 # Register routers
 app.include_router(node_router, prefix="/node", tags=["node"])
-app.include_router(image_router, prefix="/image_gen", tags=["image_gen"])
-app.include_router(text_router, prefix="/text_gen", tags=["text_gen"])
+app.include_router(image_router, prefix="/image-gen", tags=["image-gen"])
+app.include_router(text_router, prefix="/text-gen", tags=["text-gen"])
 
 # Add request timing middleware
 @app.middleware("http")

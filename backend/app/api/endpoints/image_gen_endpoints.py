@@ -41,8 +41,9 @@ async def generate_image(
             "negative_prompt": negative_prompt,
         }
         # Generate the image
+        image_service = ImageGenService()
         # Provider has 3 options: STABILITY_AI, AWS_NOVA, MOCK
-        image_base64 = await ImageGenService.generate_image(structured_prompt=structured_prompt, 
+        image_base64 = await image_service.generate_image(prompt=structured_prompt, 
                                                             negative_prompt=negative_prompt,
                                                             output_format="jpeg",
                                                             seed=202,

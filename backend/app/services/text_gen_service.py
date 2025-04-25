@@ -17,8 +17,8 @@ class TextGenService:
     # OpenAI API credentials
     USE_FAKE_DATA = os.environ.get("USE_FAKE_DATA", "True").lower() == "true"
     API_KEY = os.environ.get("OPENAI_API_KEY")
-    API_URL = "https://api.openai.com/v1/chat/completions"
-    MODEL = os.environ.get("OPENAI_MODEL", "gpt-4o")
+    API_URL = "https://api.openai.com/v1/responses"
+    MODEL = os.environ.get("OPENAI_MODEL", "gpt-4.1-nano")
     
     @staticmethod
     async def text_to_image_attributes(prompt: str) -> ToSpec:
@@ -80,7 +80,7 @@ class TextGenService:
             # Check if we have OpenAI API access
             if not TextGenService.USE_FAKE_DATA:
                 # Make API call to OpenAI
-                attributes_dict = await TextGenService._call_openai_api(prompt, final_prompt)
+                attributes_dict = await TextGenService._call_openai_api(final_prompt)
             else:
                 # Fallback to mock extraction if no API key
                 logger.warning("No OpenAI API key found, using mock extraction")
@@ -110,7 +110,7 @@ class TextGenService:
             )
     
     @staticmethod
-    async def _call_openai_api(prompt: str, system_prompt: str) -> Dict[str, Any]:
+    async def _call_openai_api(system_prompt: str) -> Dict[str, Any]:
         """Call OpenAI API to extract attributes from text"""
         try:
             async with httpx.AsyncClient() as client:
@@ -118,10 +118,8 @@ class TextGenService:
                     TextGenService.API_URL,
                     json={
                         "model": TextGenService.MODEL,
-                        "messages": [
-                            {"role": "system", "content": system_prompt},
-                            {"role": "user", "content": prompt}
-                        ],
+                        # "input": f"{system_prompt}\n\nUser: {prompt}",
+                        "input": f"{system_prompt}",
                         "temperature": 0.1,
                     },
                     headers={"Authorization": f"Bearer {TextGenService.API_KEY}"},
@@ -130,9 +128,10 @@ class TextGenService:
                 
                 if response.status_code == 200:
                     result = response.json()
-                    content = result["choices"][0]["message"]["content"]
+                    # Extract text from the Response API format
+                    text = result["output"][0]["content"][0]["text"]
                     # Parse the JSON response from the LLM
-                    return json.loads(content)
+                    return json.loads(text)
                 else:
                     logger.error(f"OpenAI API error: {response.status_code} - {response.text}")
                     # Return empty dict on error

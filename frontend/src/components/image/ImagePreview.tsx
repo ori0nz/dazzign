@@ -82,12 +82,12 @@ const ImagePreview: React.FC<ImagePreviewProps> = ({
             <p className="text-lg text-gray-900">{image.prompt}</p>
           </div>
           
-          {image.negativePrompt && (
+          {/* {image.negativePrompt && (
             <div className="mb-6">
               <h2 className="mb-1 text-sm font-medium text-gray-500">NEGATIVE PROMPT</h2>
               <p className="text-lg text-gray-900">{image.negativePrompt}</p>
             </div>
-          )}
+          )} */}
           
           <div className="mb-6">
             <h2 className="mb-2 text-sm font-medium text-gray-500">SPECIFICATIONS</h2>

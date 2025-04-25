@@ -23,7 +23,7 @@ class ImageGenService:
         self.stability_service = StabilityAIService()
         self.nova_service = AWSNovaService()
     
-    async def generate_image(self, prompt: str, structured_prompt: Optional[str] = None, 
+    async def generate_image(self, prompt: str, 
                              negative_prompt: Optional[str] = None, 
                              seed: Optional[int] = 202,
                              output_format: Optional[Literal["webp", "jpeg", "png"]] = "jpeg",
@@ -46,7 +46,7 @@ class ImageGenService:
             Base64 encoded image data
         """
         # Use structured prompt if available, otherwise use original prompt
-        generation_prompt = structured_prompt or prompt
+        # generation_prompt = structured_prompt or prompt
         
         # Check if USE_FAKE_DATA is true - this overrides any provider setting
         use_fake_data = os.environ.get("USE_FAKE_DATA", "True").lower() == "true"
@@ -57,7 +57,7 @@ class ImageGenService:
         if provider == ImageProvider.STABILITY_AI:
             try:
                 result = await self.stability_service.generate_image(
-                    prompt=generation_prompt,
+                    prompt=prompt,
                     negative_prompt=negative_prompt,
                     aspect_ratio="1:1",
                     style_preset="3d-model",
@@ -66,7 +66,6 @@ class ImageGenService:
                     model="core"
                 )
                 if result and "image" in result:
-                    logger.info(f"result generated with Stability AI: {result}")
                     return result["image"]
                 logger.error("Failed to generate image with Stability AI")
             except Exception as e:
@@ -75,7 +74,7 @@ class ImageGenService:
         elif provider == ImageProvider.AWS_NOVA:
             try:
                 result = await self.nova_service.generate_image(
-                    prompt=generation_prompt,
+                    prompt=prompt,
                     negative_prompt=negative_prompt,
                     aspect_ratio="1:1",
                     style_preset="3d-model",

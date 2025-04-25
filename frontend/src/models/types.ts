@@ -5,7 +5,7 @@ export interface ImageNode {
   isRoot: boolean;
   parentId: number | null;
   prompt: string;
-  negativePrompt: string | null;
+  // negativePrompt: string | null;
   specJson: Record<string, string[]>;
   requestParams: Record<string, any>;
   imageBase64: string;

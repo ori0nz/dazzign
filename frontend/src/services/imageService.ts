@@ -91,7 +91,7 @@ class ImageService {
   // Create a new image
   async generateImage(data: {
     prompt: string;
-    negativePrompt: string;
+    // negativePrompt: string;
     specs: Record<string, string[]>;
     parentId: number | null;
   }): Promise<ImageNode> {
@@ -109,7 +109,7 @@ class ImageService {
         },
         body: JSON.stringify({
           prompt: data.prompt,
-          negativePrompt: data.negativePrompt,
+          // negativePrompt: data.negativePrompt,
           specJson: data.specs,
           parentId: data.parentId,
           actionType: data.parentId ? 'edit' : 'generate',
@@ -130,7 +130,7 @@ class ImageService {
         isRoot: !data.parentId,
         parentId: data.parentId,
         prompt: data.prompt,
-        negativePrompt: data.negativePrompt,
+        // negativePrompt: data.negativePrompt,
         specJson: data.specs,
         requestParams: { width: 1024, height: 1024 },
         imagePath: MOCK_IMAGES[Math.floor(Math.random() * MOCK_IMAGES.length)].imagePath,

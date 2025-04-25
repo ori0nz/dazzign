@@ -7,12 +7,11 @@ import { useTranslation } from 'react-i18next';
 
 interface PromptFormProps {
   initialPrompt?: string;
-  initialStructuredPrompt?: string;
   initialSpecs?: Record<string, string[]>;
   parentId?: number | null;
   onSubmit: (data: {
     prompt: string;
-    negativePrompt: string;
+    // negativePrompt: string;
     specs: Record<string, string[]>;
     parentId: number | null;
   }) => void;
@@ -20,14 +19,12 @@ interface PromptFormProps {
 
 const PromptForm: React.FC<PromptFormProps> = ({
   initialPrompt = '',
-  initialStructuredPrompt = '',
   initialSpecs = {},
   parentId = null,
   onSubmit,
 }) => {
   const { t } = useTranslation();
   const [prompt, setPrompt] = useState(initialPrompt);
-  const [structuredPrompt, setStructuredPrompt] = useState(initialStructuredPrompt);
   const [specs, setSpecs] = useState<Record<string, string[]>>(
     SPEC_CATEGORIES.reduce((acc, category) => {
       acc[category.id] = initialSpecs[category.id] || [];
@@ -42,14 +39,13 @@ const PromptForm: React.FC<PromptFormProps> = ({
   // Update form values when props change (e.g., when parentImage loads)
   useEffect(() => {
     setPrompt(initialPrompt);
-    setStructuredPrompt(initialStructuredPrompt);
     setSpecs(
       SPEC_CATEGORIES.reduce((acc, category) => {
         acc[category.id] = initialSpecs[category.id] || [];
         return acc;
       }, {} as Record<string, string[]>)
     );
-  }, [initialPrompt, initialStructuredPrompt, initialSpecs]);
+  }, [initialPrompt, initialSpecs]);
 
   const generateSpecsFromPrompt = async () => {
     if (!prompt.trim()) return;
@@ -57,14 +53,12 @@ const PromptForm: React.FC<PromptFormProps> = ({
     setIsGeneratingSpecs(true);
     try {
       const generatedSpecs = await imageService.generateSpecs(prompt);
-      const structuredPrompt = generatedSpecs.structuredPrompt;
       console.log("Generated specs:", generatedSpecs);
       // Ensure all values are arrays
       const sanitizedSpecs = Object.entries(generatedSpecs.attributes).reduce((acc, [key, value]) => {
         acc[key] = Array.isArray(value) ? value : (value ? [value] : []);
         return acc;
       }, {} as Record<string, string[]>);
-      setStructuredPrompt(typeof structuredPrompt === 'string' ? structuredPrompt : Array.isArray(structuredPrompt) ? structuredPrompt.join(' ') : '');
       setSpecs(sanitizedSpecs);
     } catch (error) {
       console.error('Failed to generate specifications:', error);
@@ -100,7 +94,7 @@ const PromptForm: React.FC<PromptFormProps> = ({
     setShowConfirmModal(false);
     onSubmit({
       prompt,
-      negativePrompt: structuredPrompt,
+      // negativePrompt: structuredPrompt,
       specs,
       parentId,
     });
@@ -191,20 +185,6 @@ const PromptForm: React.FC<PromptFormProps> = ({
           {generatePreviewPrompt()}
         </div>
       </div> */}
-
-      <div className="mb-6">
-        <label htmlFor="structured-prompt" className="mb-2 flex items-center text-lg font-medium text-gray-900">
-          <span className="mr-2">🪄</span> Structured Prompt:
-        </label>
-        <textarea
-          id="structured-prompt"
-          value={structuredPrompt}
-          onChange={(e) => setStructuredPrompt(e.target.value)}
-          className="block w-full rounded-lg border border-gray-300 bg-white p-2.5 text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
-          placeholder="What to avoid in the generation..."
-          rows={2}
-        />
-      </div>
 
       <div className="flex justify-end">
         <Button 

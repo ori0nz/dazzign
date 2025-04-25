@@ -36,7 +36,7 @@ const PromptInput: React.FC = () => {
 
   const handleSubmit = async (data: {
     prompt: string;
-    negativePrompt: string;
+    // negativePrompt: string;
     specs: Record<string, string[]>;
     parentId: number | null;
   }) => {
@@ -126,7 +126,7 @@ const PromptInput: React.FC = () => {
       <PromptForm 
         parentId={parsedParentId}
         initialPrompt={parentImage?.prompt || ''}
-        initialStructuredPrompt={parentImage?.negativePrompt || ''}
+        // initialStructuredPrompt={parentImage?.negativePrompt || ''}
         initialSpecs={parentImage?.specJson || {}}
         onSubmit={handleSubmit}
       />

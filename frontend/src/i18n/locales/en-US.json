@@ -2,6 +2,7 @@
   "common": {
     "projects": "Projects",
     "create": "Create",
+    "market": "Market",
     "loading": "Loading...",
     "error": "Error",
     "back": "Back",

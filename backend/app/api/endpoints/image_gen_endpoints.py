@@ -47,7 +47,8 @@ async def generate_image(
                                                             negative_prompt=negative_prompt,
                                                             output_format="jpeg",
                                                             seed=202,
-                                                            provider=ImageProvider.STABILITY_AI)
+                                                            provider=ImageProvider.AWS_BEDROCK,
+                                                            model_id="stability.stable-image-ultra-v1:1")
         image_data.image_base64 = image_base64
 
         # Create image in database

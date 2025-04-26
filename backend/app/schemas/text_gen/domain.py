@@ -3,7 +3,7 @@ from typing import Optional, List
 from app.schemas.common.design_attributes import PCCaseAttributes
 # Schema for text-to-image response
 class ToSpec(BaseModel):
-    prompt: str
+    prompt: Optional[str] = None
     attributes: PCCaseAttributes
     structured_prompt: str = Field(..., description="Structured prompt suitable for image generation")
     

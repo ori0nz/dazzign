@@ -3,7 +3,7 @@ from typing import Optional, Dict, Any
 
 # Schema for text-to-image request
 class ToSpecRequest(BaseModel):
-    prompt: Optional[str] = Field(..., description="Free-form text description of the desired PC case design")
+    prompt: Optional[str] = None
     negative_prompt: Optional[str] = None
     parent_id: Optional[int] = None
     

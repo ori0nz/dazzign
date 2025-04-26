@@ -228,7 +228,7 @@ class TextGenService:
     PROVIDER_CLAUDE = "claude"
     
     @staticmethod
-    async def text_to_image_attributes(prompt: str, provider: str = None, model_id: str = None, image_base64: str = None) -> ToSpec:
+    async def text_to_image_attributes(prompt: str = None, provider: str = None, model_id: str = None, image_base64: str = None) -> ToSpec:
         """
         Convert free-form text to structured PC case design attributes using LLM
         
@@ -264,11 +264,12 @@ class TextGenService:
                         features: Functional features (e.g., "Water Cooling", "Vertical GPU Mount", "Cable Management", "LCD Display").
                         environment: Visual setting or background (e.g., "Dark Room", "On a Gaming Desk", "Futuristic Lab").
                         You MUST follow these rules:
-                        Always return a single JSON object containing ALL of the above keys.
-                        Each attribute must be represented as an array of strings, even if only one value is extracted or assumed.
-                        If the user prompt does not specify an attribute, make a reasonable guess or use a common default (e.g., "Black" for color, "Minimalist" for style, "Mid-Tower" for shape, etc.).
-                        All extracted or assumed values must be in English, even if the user input is in another language.
-                        Do NOT add any explanations or extra text-output ONLY the JSON object.
+                        1. Always return a single JSON object containing ALL of the above keys.
+                        2. Each attribute must be represented as an array of strings, even if only one value is extracted or assumed.
+                        3. If the user prompt does not specify an attribute, make a reasonable guess or use a common default (e.g., "Black" for color, "Minimalist" for style, "Mid-Tower" for shape, etc.).
+                        4. All extracted or assumed values must be in English, even if the user input is in another language.
+                        5. Do NOT add any explanations or extra text-output ONLY the JSON object.
+                        6. Do NOT wrap the JSON in code blocks, markdown formatting, or any extra characters.
                         Below are a few examples:
                         """
         
@@ -362,7 +363,7 @@ class TextGenService:
             
             # Convert the dictionary to our Pydantic model
             attributes = PCCaseAttributes(**attributes_dict)
-            logger.info(f"Attributes: {attributes}")
+            # logger.info(f"Attributes: {attributes}")
             
             # Generate a structured prompt
             structured_prompt = ""
@@ -484,7 +485,7 @@ class TextGenService:
             )
             
             # Parse the JSON response from the LLM
-            logger.info(f"Claude API response: {response}")
+            # logger.info(f"Claude API response: {response}")
             return json.loads(response)
         except Exception as e:
             logger.error(f"Error calling Claude API: {e}")

@@ -16,7 +16,7 @@ async def text_to_image(
     """
     try:
         # Process the prompt through LLM to extract attributes
-        result = await TextGenService.text_to_image_attributes(request.prompt)
+        result = await TextGenService.text_to_image_attributes(request.prompt, provider="nova", model_id="us.amazon.nova-pro-v1:0")
         return result
         
     except Exception as e:

@@ -1,8 +1,9 @@
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 import json
 import logging
 import os
 import httpx
+import boto3
 from dotenv import load_dotenv
 from app.schemas.text_gen.domain import PCCaseAttributes, ToSpec
 
@@ -10,6 +11,75 @@ from app.schemas.text_gen.domain import PCCaseAttributes, ToSpec
 load_dotenv()
 
 logger = logging.getLogger(__name__)
+
+class NovaConverseClient:
+    """Client for interacting with Amazon Bedrock's Nova models via the Converse API."""
+    
+    # AWS credentials from environment variables
+    AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
+    AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
+    AWS_REGION = os.environ.get("AWS_REGION", "us-east-1")
+    
+    def __init__(self, region_name: str = None, profile_name: Optional[str] = None):
+        """Initialize the Nova Converse client."""
+        session_kwargs = {}
+        
+        # Use provided region or fall back to env variable or default
+        if region_name is None:
+            region_name = self.AWS_REGION
+            
+        # Add AWS credentials if available in environment
+        if self.AWS_ACCESS_KEY_ID and self.AWS_SECRET_ACCESS_KEY:
+            session_kwargs['aws_access_key_id'] = self.AWS_ACCESS_KEY_ID
+            session_kwargs['aws_secret_access_key'] = self.AWS_SECRET_ACCESS_KEY
+        
+        # Use named profile if provided
+        if profile_name:
+            session_kwargs['profile_name'] = profile_name
+            
+        session = boto3.Session(**session_kwargs)
+        self.client = session.client("bedrock-runtime", region_name=region_name)
+        
+        # Available Nova model IDs
+        self.PRO_MODEL_ID = "us.amazon.nova-pro-v1:0"
+        self.LITE_MODEL_ID = "us.amazon.nova-lite-v1:0"
+        self.MICRO_MODEL_ID = "us.amazon.nova-micro-v1:0"
+    
+    def simple_conversation(self, user_prompt: str, system_prompt: str = None, model_id: str = None) -> Dict:
+        """Send a single-turn conversation to Nova."""
+        if model_id is None:
+            model_id = self.LITE_MODEL_ID
+            
+        messages = [
+            {"role": "user", "content": [{"text": user_prompt}]},
+        ]
+        
+        system = None
+        if system_prompt:
+            system = [{"text": system_prompt}]
+            
+        inf_params = {"maxTokens": 1000, "topP": 0.9, "temperature": 0.9}
+        
+        response = self.client.converse(
+            modelId=model_id,
+            messages=messages,
+            system=system,
+            inferenceConfig=inf_params
+        )
+        
+        return response
+        
+    def get_response_text(self, response: Dict) -> str:
+        """Extract the text content from a Nova response."""
+        return response["output"]["message"]["content"][0]["text"]
+        
+    @staticmethod
+    def check_aws_credentials() -> bool:
+        """Check if AWS credentials are properly configured."""
+        return (
+            bool(os.environ.get("AWS_ACCESS_KEY_ID")) and
+            bool(os.environ.get("AWS_SECRET_ACCESS_KEY"))
+        )
 
 class TextGenService:
     """Service for handling text-to-image conversions using LLM"""
@@ -20,70 +90,107 @@ class TextGenService:
     API_URL = "https://api.openai.com/v1/responses"
     MODEL = os.environ.get("OPENAI_MODEL", "gpt-4.1-nano")
     
+    # Provider constants
+    PROVIDER_OPENAI = "openai"
+    PROVIDER_NOVA = "nova"
+    
     @staticmethod
-    async def text_to_image_attributes(prompt: str) -> ToSpec:
+    async def text_to_image_attributes(prompt: str, provider: str = None, model_id: str = None) -> ToSpec:
         """
-        Convert free-form text to structured PC case design attributes using OpenAI
-        """
-        # LLM system prompt for attribute extraction
-        system_prompt = """You are an AI assistant whose job is to extract structured PC case design attributes from a free-form user prompt.
-
-                        Please extract the following attributes **as arrays of English strings**:
-
-                        - color: Main and accent colors (e.g., "Black", "Red", "Navy Blue", "Gold").
-                        - style: Design style or theme (e.g., "Minimalist", "Futuristic", "Steampunk", "Cthulhu-Ghibli").
-                        - shape: Form factor or silhouette (e.g., "Mid-Tower", "Cube", "Spherical", "Open-Frame").
-                        - material: Construction materials (e.g., "Aluminum", "Tempered Glass", "Wood", "Acrylic").
-                        - ventilation: Vent and airflow features (e.g., "Mesh Front", "Side Vents", "Open-Air Design").
-                        - lighting: Lighting setup (e.g., "ARGB Fans", "LED Strips", "Ambient Glow", "No Lighting").
-                        - features: Functional features (e.g., "Water Cooling", "Vertical GPU Mount", "Cable Management", "LCD Display").
-                        - environment: Visual setting or background (e.g., "Dark Room", "On a Gaming Desk", "Futuristic Lab").
-
-                        You MUST follow these rules:
-                        1. Return a **single JSON object** containing only the keys that were confidently extracted.
-                        2. Each attribute must be represented as an **array** of strings, even if only one value is extracted.
-                        3. All extracted values must be in **English**, even if the user input is in another language.
-                        4. If no attribute can be extracted, return an **empty JSON object**: `{}`.
-                        5. Do NOT add any explanations or extra text—output ONLY the JSON object.
-
-                        Below are a few examples:"""
+        Convert free-form text to structured PC case design attributes using LLM
         
+        Args:
+            prompt: The user's text prompt
+            provider: The LLM provider to use (openai or nova)
+            model_id: The specific model ID to use
+        """
+        # Set default provider if not specified
+        if not provider:
+            provider = TextGenService.PROVIDER_OPENAI if not TextGenService.USE_FAKE_DATA else "mock"
+            
+        # Check if AWS credentials are available for Nova
+        if provider == TextGenService.PROVIDER_NOVA and not NovaConverseClient.check_aws_credentials():
+            logger.warning("AWS credentials not found for Nova provider, falling back to mock")
+            provider = "mock"
+        
+        # LLM system prompt for attribute extraction
+        system_prompt = """
+                        You are an AI assistant whose job is to extract structured PC case design attributes from any free-form user prompt.
+                        Your task is to always output a JSON object containing the following attributes as arrays of English strings, even if the user prompt is vague or lacks detail.
+                        If the information is not explicit, you should make reasonable assumptions based on the context or general conventions.
+                        color: Main and accent colors (e.g., "Black", "Red", "Navy Blue", "Gold").
+                        style: Design style or theme (e.g., "Minimalist", "Futuristic", "Steampunk", "Cthulhu-Ghibli").
+                        shape: Form factor or silhouette (e.g., "Mid-Tower", "Cube", "Spherical", "Open-Frame").
+                        material: Construction materials (e.g., "Aluminum", "Tempered Glass", "Wood", "Acrylic").
+                        ventilation: Vent and airflow features (e.g., "Mesh Front", "Side Vents", "Open-Air Design").
+                        lighting: Lighting setup (e.g., "ARGB Fans", "LED Strips", "Ambient Glow", "No Lighting").
+                        features: Functional features (e.g., "Water Cooling", "Vertical GPU Mount", "Cable Management", "LCD Display").
+                        environment: Visual setting or background (e.g., "Dark Room", "On a Gaming Desk", "Futuristic Lab").
+                        modifiers: Additional specifications, quantities, or customizable details (e.g., "2 Fans", "3 USB Ports", "Removable Side Panel", "Expandable Storage").
+                        You MUST follow these rules:
+                        Always return a single JSON object containing ALL of the above keys.
+                        Each attribute must be represented as an array of strings, even if only one value is extracted or assumed.
+                        If the user prompt does not specify an attribute, make a reasonable guess or use a common default (e.g., "Black" for color, "Minimalist" for style, "Mid-Tower" for shape, etc.).
+                        All extracted or assumed values must be in English, even if the user input is in another language.
+                        Do NOT add any explanations or extra text-output ONLY the JSON object.
+                        Below are a few examples:
+                        """
+
         few_shot_examples = """
-                        User Prompt: "我想要一個木頭風格的中塔機殼，有RGB燈條和側邊透氣孔，內建水冷，整體走日系極簡風，擺在書桌上很好看"
+                        User Prompt: "我想要一個木頭風格的中塔機殼，有RGB燈條和側邊透氣孔，內建水冷，整體走日系極簡風，擺在書桌上很好看，風扇要兩個"
                         Output:
                         {
-                        "material": ["Wood"],
-                        "shape": ["Mid-Tower"],
-                        "lighting": ["RGB Lighting"],
-                        "ventilation": ["Side Vents"],
-                        "features": ["Water Cooling"],
+                        "color": ["Wood Brown"],
                         "style": ["Minimalist", "Japanese"],
-                        "environment": ["On a Desk"]
+                        "shape": ["Mid-Tower"],
+                        "material": ["Wood"],
+                        "ventilation": ["Side Vents"],
+                        "lighting": ["RGB Lighting"],
+                        "features": ["Water Cooling"],
+                        "environment": ["On a Desk"],
+                        "modifiers": ["2 Fans"]
                         }
-
-                        ---
-
-                        User Prompt: "A cyberpunk cube case with open sides, neon ARGB glow, and vertical GPU mount. It should be small and look good in a dark gaming room."
+                        User Prompt: "A cyberpunk cube case with open sides, neon ARGB glow, and vertical GPU mount. It should be small and look good in a dark gaming room. I want three USB ports and a removable side panel."
                         Output:
                         {
+                        "color": ["Neon Colors", "Black"],
                         "style": ["Cyberpunk"],
                         "shape": ["Cube", "Compact"],
+                        "material": ["Aluminum", "Acrylic"],
                         "ventilation": ["Open-Air Design"],
                         "lighting": ["ARGB Lighting", "Neon"],
                         "features": ["Vertical GPU Mount"],
-                        "environment": ["Dark Room", "Gaming Setup"]
+                        "environment": ["Dark Room", "Gaming Setup"],
+                        "modifiers": ["3 USB Ports", "Removable Side Panel"]
+                        }
+                        User Prompt: "我要一個很普通的機殼"
+                        Output:
+                        {
+                        "color": ["Black"],
+                        "style": ["Minimalist"],
+                        "shape": ["Mid-Tower"],
+                        "material": ["Steel"],
+                        "ventilation": ["Mesh Front"],
+                        "lighting": ["No Lighting"],
+                        "features": ["Cable Management"],
+                        "environment": ["On a Desk"],
+                        "modifiers": []
                         }
                         """
+
         final_prompt = f"{system_prompt}\n\n{few_shot_examples}"
 
         try:
-            # Check if we have OpenAI API access
-            if not TextGenService.USE_FAKE_DATA:
+            # Process based on provider
+            if provider == TextGenService.PROVIDER_OPENAI:
                 # Make API call to OpenAI
-                attributes_dict = await TextGenService._call_openai_api(final_prompt)
+                attributes_dict = await TextGenService._call_openai_api(final_prompt, prompt, model_id)
+            elif provider == TextGenService.PROVIDER_NOVA:
+                # Make API call to Amazon Bedrock Nova
+                attributes_dict = await TextGenService._call_nova_api(final_prompt, prompt, model_id)
             else:
-                # Fallback to mock extraction if no API key
-                logger.warning("No OpenAI API key found, using mock extraction")
+                # Fallback to mock extraction
+                logger.warning(f"Using mock extraction (provider: {provider})")
                 attributes_dict = TextGenService._mock_extract_attributes(prompt)
             
             # Convert the dictionary to our Pydantic model
@@ -110,16 +217,18 @@ class TextGenService:
             )
     
     @staticmethod
-    async def _call_openai_api(system_prompt: str) -> Dict[str, Any]:
+    async def _call_openai_api(system_prompt: str, user_prompt: str = None, model_id: str = None) -> Dict[str, Any]:
         """Call OpenAI API to extract attributes from text"""
         try:
+            if not model_id:
+                model_id = TextGenService.MODEL
+                
             async with httpx.AsyncClient() as client:
                 response = await client.post(
                     TextGenService.API_URL,
                     json={
-                        "model": TextGenService.MODEL,
-                        # "input": f"{system_prompt}\n\nUser: {prompt}",
-                        "input": f"{system_prompt}",
+                        "model": model_id,
+                        "input": f"{system_prompt}\n\nUser: {user_prompt}" if user_prompt else system_prompt,
                         "temperature": 0.1,
                     },
                     headers={"Authorization": f"Bearer {TextGenService.API_KEY}"},
@@ -138,6 +247,33 @@ class TextGenService:
                     return {}
         except Exception as e:
             logger.error(f"Error calling OpenAI API: {e}")
+            return {}
+    
+    @staticmethod
+    async def _call_nova_api(system_prompt: str, user_prompt: str, model_id: str = None) -> Dict[str, Any]:
+        """Call Amazon Bedrock Nova API to extract attributes from text"""
+        try:
+            # Initialize the Nova client
+            nova_client = NovaConverseClient()
+            
+            # Use default model if not specified
+            if not model_id:
+                model_id = nova_client.LITE_MODEL_ID
+                
+            # Call the Nova API
+            response = nova_client.simple_conversation(
+                user_prompt=user_prompt,
+                system_prompt=system_prompt,
+                model_id=model_id
+            )
+            
+            # Extract text from response
+            text = nova_client.get_response_text(response)
+            
+            # Parse the JSON response from the LLM
+            return json.loads(text)
+        except Exception as e:
+            logger.error(f"Error calling Nova API: {e}")
             return {}
     
     @staticmethod

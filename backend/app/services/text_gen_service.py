@@ -1,9 +1,11 @@
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
 import json
 import logging
 import os
 import httpx
 import boto3
+import base64
+from botocore.exceptions import ClientError
 from dotenv import load_dotenv
 from app.schemas.text_gen.domain import PCCaseAttributes, ToSpec
 
@@ -81,6 +83,136 @@ class NovaConverseClient:
             bool(os.environ.get("AWS_SECRET_ACCESS_KEY"))
         )
 
+class BedrockClaudeService:
+    """Client for interacting with Amazon Bedrock's Claude multimodal models."""
+    
+    # AWS credentials from environment variables
+    AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
+    AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
+    AWS_REGION = os.environ.get("AWS_REGION", "us-west-2")
+    
+    # Claude model IDs
+    CLAUDE_3_SONNET = "us.anthropic.claude-3-7-sonnet-20250219-v1:0"
+    
+    def __init__(self, region_name: str = None, profile_name: Optional[str] = None):
+        """Initialize the Bedrock Claude client."""
+        session_kwargs = {}
+        
+        # Use provided region or fall back to env variable or default
+        if region_name is None:
+            region_name = self.AWS_REGION
+            
+        # Add AWS credentials if available in environment
+        if self.AWS_ACCESS_KEY_ID and self.AWS_SECRET_ACCESS_KEY:
+            session_kwargs['aws_access_key_id'] = self.AWS_ACCESS_KEY_ID
+            session_kwargs['aws_secret_access_key'] = self.AWS_SECRET_ACCESS_KEY
+        
+        # Use named profile if provided
+        if profile_name:
+            session_kwargs['profile_name'] = profile_name
+            
+        session = boto3.Session(**session_kwargs)
+        self.client = session.client("bedrock-runtime", region_name=region_name)
+    
+    def run_multi_modal_prompt(self, model_id: str, 
+                               messages: List[Dict], 
+                               max_tokens: int = 2000,
+                               temperature: float = 0.7,
+                               top_p: float = 0.9,
+                               top_k: int = 100) -> Dict:
+        """
+        Invokes a model with a multimodal prompt.
+        
+        Args:
+            model_id (str): The model ID to use.
+            messages (List[Dict]): The messages to send to the model.
+            max_tokens (int): The maximum number of tokens to generate.
+            
+        Returns:
+            Dict: The model's response.
+        """
+        body = json.dumps(
+            {
+                "anthropic_version": "bedrock-2023-05-31",
+                "max_tokens": max_tokens,
+                "messages": messages,
+                "temperature": temperature,
+                "top_p": top_p,
+                "top_k": top_k,
+            }
+        )
+
+        try:
+            response = self.client.invoke_model(
+                body=body, modelId=model_id)
+            response_body = json.loads(response.get('body').read())
+            return response_body
+        except ClientError as err:
+            message = err.response["Error"]["Message"]
+            logger.error("A client error occurred: %s", message)
+            raise
+    
+    def process_image_with_text(self, prompt: str, image_base64: str = None, model_id: str = None, max_tokens: int = 1000) -> str:
+        """
+        Process an image with a text prompt using Claude multimodal capabilities.
+        
+        Args:
+            image_path (str): Path to the image file.
+            prompt (str): Text prompt to send with the image.
+            model_id (str, optional): Model ID to use. Defaults to Claude 3 Sonnet.
+            max_tokens (int, optional): Maximum tokens to generate. Defaults to 1000.
+            
+        Returns:
+            str: The generated response text.
+        """
+        if model_id is None:
+            model_id = self.CLAUDE_3_SONNET
+            
+        # Read and encode image
+        # image_ext = image_path.split(".")[-1]
+        # with open(image_path, "rb") as image_file:
+        #     content_image = base64.b64encode(image_file.read()).decode('utf8')
+
+        # Create message payload
+        message = {
+            "role": "user",
+            "content": [
+                {
+                    "type": "image", 
+                    "source": {
+                        "type": "base64",
+                        "media_type": "image/jpeg", 
+                        "data": image_base64
+                    }
+                },
+                {
+                    "type": "text", 
+                    "text": prompt
+                }
+            ]
+        }
+        
+        messages = [message]
+        
+        # Call the model
+        response = self.run_multi_modal_prompt(model_id, messages, max_tokens)
+        
+        # Extract the response text
+        if "content" in response and len(response["content"]) > 0:
+            for item in response["content"]:
+                if item.get("type") == "text":
+                    return item.get("text", "")
+        
+        return ""
+    
+    @staticmethod
+    def check_aws_credentials() -> bool:
+        """Check if AWS credentials are properly configured."""
+        return (
+            bool(os.environ.get("AWS_ACCESS_KEY_ID")) and
+            bool(os.environ.get("AWS_SECRET_ACCESS_KEY"))
+        )
+
 class TextGenService:
     """Service for handling text-to-image conversions using LLM"""
     
@@ -93,29 +225,34 @@ class TextGenService:
     # Provider constants
     PROVIDER_OPENAI = "openai"
     PROVIDER_NOVA = "nova"
+    PROVIDER_CLAUDE = "claude"
     
     @staticmethod
-    async def text_to_image_attributes(prompt: str, provider: str = None, model_id: str = None) -> ToSpec:
+    async def text_to_image_attributes(prompt: str, provider: str = None, model_id: str = None, image_base64: str = None) -> ToSpec:
         """
         Convert free-form text to structured PC case design attributes using LLM
         
         Args:
             prompt: The user's text prompt
-            provider: The LLM provider to use (openai or nova)
+            provider: The LLM provider to use (openai, nova, or claude)
             model_id: The specific model ID to use
         """
         # Set default provider if not specified
         if not provider:
             provider = TextGenService.PROVIDER_OPENAI if not TextGenService.USE_FAKE_DATA else "mock"
             
-        # Check if AWS credentials are available for Nova
-        if provider == TextGenService.PROVIDER_NOVA and not NovaConverseClient.check_aws_credentials():
-            logger.warning("AWS credentials not found for Nova provider, falling back to mock")
+        # Check if AWS credentials are available for Nova or Claude
+        if provider in [TextGenService.PROVIDER_NOVA, TextGenService.PROVIDER_CLAUDE] and not NovaConverseClient.check_aws_credentials():
+            logger.warning(f"AWS credentials not found for {provider} provider, falling back to mock")
             provider = "mock"
         
         # LLM system prompt for attribute extraction
+        start_prompt = "You are an AI assistant whose job is to extract structured PC case design attributes from any free-form user prompt."
+        image_start_prompt = """You are an AI assistant whose job is to extract design attributes from user image.
+                                You MUST follow these rules:***Do NOT add any explanations or extra text-output ONLY the JSON object***
+                             """
+        # LLM system prompt for attribute extraction
         system_prompt = """
-                        You are an AI assistant whose job is to extract structured PC case design attributes from any free-form user prompt.
                         Your task is to always output a JSON object containing the following attributes as arrays of English strings, even if the user prompt is vague or lacks detail.
                         If the information is not explicit, you should make reasonable assumptions based on the context or general conventions.
                         color: Main and accent colors (e.g., "Black", "Red", "Navy Blue", "Gold").
@@ -126,7 +263,6 @@ class TextGenService:
                         lighting: Lighting setup (e.g., "ARGB Fans", "LED Strips", "Ambient Glow", "No Lighting").
                         features: Functional features (e.g., "Water Cooling", "Vertical GPU Mount", "Cable Management", "LCD Display").
                         environment: Visual setting or background (e.g., "Dark Room", "On a Gaming Desk", "Futuristic Lab").
-                        modifiers: Additional specifications, quantities, or customizable details (e.g., "2 Fans", "3 USB Ports", "Removable Side Panel", "Expandable Storage").
                         You MUST follow these rules:
                         Always return a single JSON object containing ALL of the above keys.
                         Each attribute must be represented as an array of strings, even if only one value is extracted or assumed.
@@ -135,7 +271,7 @@ class TextGenService:
                         Do NOT add any explanations or extra text-output ONLY the JSON object.
                         Below are a few examples:
                         """
-
+        
         few_shot_examples = """
                         User Prompt: "我想要一個木頭風格的中塔機殼，有RGB燈條和側邊透氣孔，內建水冷，整體走日系極簡風，擺在書桌上很好看，風扇要兩個"
                         Output:
@@ -161,7 +297,6 @@ class TextGenService:
                         "lighting": ["ARGB Lighting", "Neon"],
                         "features": ["Vertical GPU Mount"],
                         "environment": ["Dark Room", "Gaming Setup"],
-                        "modifiers": ["3 USB Ports", "Removable Side Panel"]
                         }
                         User Prompt: "我要一個很普通的機殼"
                         Output:
@@ -174,11 +309,38 @@ class TextGenService:
                         "lighting": ["No Lighting"],
                         "features": ["Cable Management"],
                         "environment": ["On a Desk"],
-                        "modifiers": []
                         }
                         """
 
-        final_prompt = f"{system_prompt}\n\n{few_shot_examples}"
+        image_few_shot_examples = """
+                        User Prompt: ""
+                        Output:
+                        {
+                        "color": ["Wood Brown"],
+                        "style": ["Minimalist", "Japanese"],
+                        "shape": ["Mid-Tower"],
+                        "material": ["Wood"],
+                        "ventilation": ["Side Vents"],
+                        "lighting": ["RGB Lighting"],
+                        "features": ["Water Cooling"],
+                        "environment": ["On a Desk"],
+                        }
+                        User Prompt: ""
+                        Output:
+                        {
+                        "color": ["Black"],
+                        "style": ["Minimalist"],
+                        "shape": ["Mid-Tower"],
+                        "material": ["Steel"],
+                        "ventilation": ["Mesh Front"],
+                        "lighting": ["No Lighting"],
+                        "features": ["Cable Management"],
+                        "environment": ["On a Desk"],
+                        }
+                        """
+
+        final_prompt = f"{start_prompt}\n\n{system_prompt}\n\n{few_shot_examples}"
+        image_final_prompt = f"{image_start_prompt}\n\n{system_prompt}\n\n{image_few_shot_examples}"
 
         try:
             # Process based on provider
@@ -188,6 +350,11 @@ class TextGenService:
             elif provider == TextGenService.PROVIDER_NOVA:
                 # Make API call to Amazon Bedrock Nova
                 attributes_dict = await TextGenService._call_nova_api(final_prompt, prompt, model_id)
+            elif provider == TextGenService.PROVIDER_CLAUDE:
+                # Make API call to Amazon Bedrock Claude
+                attributes_dict = await TextGenService._call_claude_api(system_prompt=image_final_prompt, 
+                                                                        model_id=model_id, 
+                                                                        image_base64=image_base64)
             else:
                 # Fallback to mock extraction
                 logger.warning(f"Using mock extraction (provider: {provider})")
@@ -198,7 +365,7 @@ class TextGenService:
             logger.info(f"Attributes: {attributes}")
             
             # Generate a structured prompt
-            structured_prompt = TextGenService._create_structured_prompt(prompt, attributes)
+            structured_prompt = ""
             
             return ToSpec(
                 prompt=prompt,
@@ -274,6 +441,53 @@ class TextGenService:
             return json.loads(text)
         except Exception as e:
             logger.error(f"Error calling Nova API: {e}")
+            return {}
+    
+    @staticmethod
+    async def _call_claude_api(system_prompt: str, model_id: str = None, image_base64: str = None) -> Dict[str, Any]:
+        """Call Amazon Bedrock Claude API to extract attributes from text"""
+        try:
+            # Initialize the Claude client
+            claude_client = BedrockClaudeService()
+            
+            # Use default model if not specified
+            if not model_id:
+                model_id = claude_client.CLAUDE_3_SONNET
+                
+            # Format the messages for Claude
+            # messages = [
+            #     {
+            #         "role": "system",
+            #         "content": [
+            #             {
+            #                 "type": "text",
+            #                 "text": system_prompt
+            #             }
+            #         ]
+            #     },
+            #     {
+            #         "role": "user",
+            #         "content": [
+            #             {
+            #                 "type": "text",
+            #                 "text": user_prompt
+            #             }
+            #         ]
+            #     }
+            # ]
+            
+            # Call the Claude API
+            response = claude_client.process_image_with_text(
+                prompt=system_prompt,
+                image_base64=image_base64,
+                model_id=model_id
+            )
+            
+            # Parse the JSON response from the LLM
+            logger.info(f"Claude API response: {response}")
+            return json.loads(response)
+        except Exception as e:
+            logger.error(f"Error calling Claude API: {e}")
             return {}
     
     @staticmethod
@@ -353,3 +567,16 @@ class TextGenService:
         # Final composition
         prompt = "; ".join(parts) + "."
         return prompt
+    
+    @staticmethod
+    async def merge_attributes(text_attributes: PCCaseAttributes, image_attributes: PCCaseAttributes) -> PCCaseAttributes:
+        """Merge text and image attributes into a single PCCaseAttributes object"""
+        merged_attributes = PCCaseAttributes()
+        merged_attributes.shape = text_attributes.shape + image_attributes.shape
+        merged_attributes.style = text_attributes.style + image_attributes.style
+        merged_attributes.material = text_attributes.material + image_attributes.material
+        merged_attributes.ventilation = text_attributes.ventilation + image_attributes.ventilation
+        merged_attributes.lighting = text_attributes.lighting + image_attributes.lighting
+        merged_attributes.features = text_attributes.features + image_attributes.features
+        merged_attributes.environment = text_attributes.environment + image_attributes.environment
+        return merged_attributes

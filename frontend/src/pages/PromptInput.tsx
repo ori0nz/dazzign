@@ -76,7 +76,7 @@ const PromptInput: React.FC = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="mb-8">
+      <div className="mb-8 text-center">
         <h1 className="mb-2 text-3xl font-bold text-gray-900">
           {parsedParentId ? t('prompt.editTitle') : t('prompt.createTitle')}
         </h1>

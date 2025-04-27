@@ -15,10 +15,10 @@ function App() {
       <Router>
         <header className="relative border-b border-gray-200 bg-white py-4 shadow-sm">
           <div className="container mx-auto flex items-center px-4">
-            <a href="/" className="text-xl font-bold text-indigo-600">
-              ImageFlow
+            <a href="/" className="text-5xl font-bold text-indigo-600">
+              DAZZIGN
             </a>
-            <div className="ml-8 hidden items-center space-x-6 text-sm font-medium md:flex">
+            <div className="ml-8 hidden items-center space-x-6 text-2xl font-medium md:flex">
               <a href="/" className="text-gray-900 hover:text-indigo-600">{t('common.projects')}</a>
               <a href="/create" className="text-gray-500 hover:text-indigo-600">{t('common.create')}</a>
             </div>

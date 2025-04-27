@@ -7,15 +7,15 @@ import { SPEC_CATEGORIES } from '../../data/mockData';
 interface ImagePreviewProps {
   image: ImageNode;
   onEdit: () => void;
-  onRedo: () => void;
-  onDone: () => void;
+  // onRedo: () => void;
+  // onDone: () => void;
 }
 
 const ImagePreview: React.FC<ImagePreviewProps> = ({
   image,
-  onEdit,
-  onRedo,
-  onDone,
+    onEdit,
+    // onRedo,
+    // onDone,
 }) => {
   // Find the category object for a given category ID
   const getCategoryById = (id: string): SpecCategory | undefined => {
@@ -58,7 +58,7 @@ const ImagePreview: React.FC<ImagePreviewProps> = ({
             >
               Edit
             </Button>
-            <Button 
+            {/* <Button 
               variant="outline" 
               onClick={onRedo}
               className="bg-white/80 backdrop-blur-sm"
@@ -71,7 +71,7 @@ const ImagePreview: React.FC<ImagePreviewProps> = ({
               className="bg-indigo-600/90 backdrop-blur-sm"
             >
               Done
-            </Button>
+            </Button> */}
           </div>
         </div>
         

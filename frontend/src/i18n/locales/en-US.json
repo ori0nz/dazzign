@@ -11,14 +11,14 @@
     "ok": "OK"
   },
   "home": {
-    "title": "Image Projects",
+    "title": "Projects",
     "newImage": "New Image",
     "noImages": "No images yet",
     "createFirst": "Create Your First Image",
     "startNew": "Start a new image generation"
   },
   "prompt": {
-    "createTitle": "Create New Image",
+    "createTitle": "Generate New Image",
     "editTitle": "Edit Image",
     "createDesc": "Enter a prompt and specifications to generate a new image.",
     "editDesc": "Modify the prompt and specifications to create a variation of the selected image.",

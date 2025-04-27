@@ -11,14 +11,14 @@
     "ok": "確定"
   },
   "home": {
-    "title": "圖片專案",
+    "title": "專案",
     "newImage": "新增圖片",
     "noImages": "尚無圖片",
     "createFirst": "建立您的第一張圖片",
     "startNew": "開始新的圖片生成"
   },
   "prompt": {
-    "createTitle": "建立新圖片",
+    "createTitle": "生成新圖片",
     "editTitle": "編輯圖片",
     "createDesc": "輸入提示詞和規格以生成新圖片",
     "editDesc": "修改提示詞和規格以創建所選圖片的變體",

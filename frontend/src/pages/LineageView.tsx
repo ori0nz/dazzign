@@ -159,8 +159,8 @@ const LineageView: React.FC = () => {
       <ImagePreview 
         image={selectedImage}
         onEdit={handleEdit}
-        onRedo={handleRedo}
-        onDone={handleDone}
+        // onRedo={handleRedo}
+        // onDone={handleDone}
       />
     </div>
   );

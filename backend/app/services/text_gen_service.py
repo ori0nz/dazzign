@@ -575,6 +575,7 @@ class TextGenService:
         merged_attributes = PCCaseAttributes()
         merged_attributes.shape = text_attributes.shape + image_attributes.shape
         merged_attributes.style = text_attributes.style + image_attributes.style
+        merged_attributes.color = text_attributes.color + image_attributes.color
         merged_attributes.material = text_attributes.material + image_attributes.material
         merged_attributes.ventilation = text_attributes.ventilation + image_attributes.ventilation
         merged_attributes.lighting = text_attributes.lighting + image_attributes.lighting

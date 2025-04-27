@@ -19,8 +19,8 @@ async def text_to_image(
     """
     Convert free-form text to structured PC case design attributes
     """
-    logger.info(f"prompt: {prompt}")
-    logger.info(f"image_base64: {image_base64}")
+    # logger.info(f"prompt: {prompt}")
+    # logger.info(f"image_base64: {image_base64}")
     
     if not prompt and not image_base64:
         raise HTTPException(status_code=422, detail="At least one of 'prompt' or 'image_base64' must be provided.")
@@ -64,7 +64,7 @@ async def text_to_image(
                 detail="Failed to process text-to-image conversion"
             ) 
     
-    # logger.info(f"text_attributes: {text_attributes}")
+    logger.info(f"text_attributes: {text_attributes}")
     logger.info(f"image_attributes: {image_attributes}")
 
     response = {
@@ -75,7 +75,7 @@ async def text_to_image(
         
     if image_attributes and text_attributes:
         merged_attributes = await TextGenService.merge_attributes(text_attributes, image_attributes)
-        # logger.info(f"merged_attributes: {merged_attributes}")
+        logger.info(f"merged_attributes: {merged_attributes}")
         response["attributes"] = merged_attributes
         
         return response

@@ -19,6 +19,7 @@ const PromptInput: React.FC = () => {
     prompt?: string;
     attributes?: string[];
     keyword?: string;
+    specJson?: Record<string, string[]>;
   } | null;
 
   useEffect(() => {
@@ -134,7 +135,7 @@ const PromptInput: React.FC = () => {
         parentId={parsedParentId}
         initialPrompt={ideaState?.prompt || parentImage?.prompt || ''}
         // initialStructuredPrompt={parentImage?.negativePrompt || ''}
-        initialSpecs={parentImage?.specJson || {}}
+        initialSpecs={ideaState?.specJson || parentImage?.specJson || {}}
         onSubmit={handleSubmit}
       />
 

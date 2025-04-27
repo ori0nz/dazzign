@@ -22,7 +22,7 @@ function App() {
             <div className="ml-8 hidden items-center space-x-6 text-sm font-medium md:flex">
               <a href="/" className="text-gray-900 hover:text-indigo-600">{t('common.projects')}</a>
               <a href="/create" className="text-gray-500 hover:text-indigo-600">{t('common.create')}</a>
-              <a href="/market" className="text-gray-500 hover:text-indigo-600">{t('common.market')}</a>
+              <a href="/idea" className="text-gray-500 hover:text-indigo-600">{t('common.idea')}</a>
             </div>
             <div className="absolute right-4 top-1/2 -translate-y-1/2">
               <LanguageSwitcher />
@@ -37,7 +37,7 @@ function App() {
             <Route path="/edit/:parentId" element={<PromptInput />} />
             <Route path="/preview/:id" element={<ImagePreviewPage />} />
             <Route path="/lineage/:id" element={<LineageView />} />
-            <Route path="/market" element={<IdeaPage />} />
+            <Route path="/idea" element={<IdeaPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </main>

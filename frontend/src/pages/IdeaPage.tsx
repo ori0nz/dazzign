@@ -18,19 +18,19 @@ interface Idea {
 
 const IDEAS: Idea[] = [
   {
-    id: 1,
-    keyword: "Mountain Climbing",
-    imageUrl: "https://images.pexels.com/photos/1659438/pexels-photo-1659438.jpeg",
-    attributes: ["outdoor", "adventure", "sports"],
-    description: "Experience the thrill of conquering peaks and reaching new heights. Discover the beauty of nature from breathtaking vantage points.",
+    id: 10000,
+    keyword: "魔物獵人",
+    imageUrl: "https://shared.cloudflare.steamstatic.com/store_item_assets/steam/apps/582010/header.jpg?t=1734656748",
+    attributes: ["火龍", "雷狼龍", "揮舞大劍的獵人"],
+    description: " 魔物獵人系列獨特的部位破壞與四人連線共同討伐巨大魔物的特性蔚為風潮，發展為系列作一貫的風格特色。",
     popularity: 95
   },
   {
-    id: 2,
-    keyword: "Urban Photography",
-    imageUrl: "https://images.pexels.com/photos/3052361/pexels-photo-3052361.jpeg",
-    attributes: ["creative", "city", "art"],
-    description: "Capture the essence of city life through your lens. Find beauty in the urban landscape.",
+    id: 10001,
+    keyword: "SD鋼彈",
+    imageUrl: "https://p2.bahamut.com.tw/B/2KU/85/42d73bfc8e37b957e10bfae8471ttl55.PNG",
+    attributes: ["元祖SD鋼彈", "BB戰士", "SD戰國傳"],
+    description: "SD鋼彈（Super Deformed Gundam）是指鋼彈系列作品當中登場的機械與人物，將其頭部誇張化，手腳縮小成為二頭身比例的角色，以及使用SD機械／人物所製作的商品群之總稱。",
     popularity: 85
   },
   {

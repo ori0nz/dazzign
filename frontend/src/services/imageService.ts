@@ -60,14 +60,19 @@ class ImageService {
   }
 
     // Generate specifications from prompt
-    async generateSpecs(prompt: string): Promise<Record<string, string[]>> {
+    async generateSpecs(prompt: string, promptImage?: string,
+    ): Promise<Record<string, string[]>> {
       try {
+        const payload: Record<string, any> = { prompt };
+        if (promptImage) {
+          payload.image_base64 = promptImage;         // e.g. "data:image/png;base64,...."
+        }
+        // console.log("payload", payload);
         const response = await fetch(`${API_BASE}/text-gen/to-spec`, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ prompt }),
+          headers: {'Content-Type': 'application/json',},
+          // headers: { 'Content-Type': 'multipart/form-data' },
+          body: JSON.stringify(payload),
         });
         
         if (!response.ok) {
@@ -94,6 +99,7 @@ class ImageService {
     // negativePrompt: string;
     specs: Record<string, string[]>;
     parentId: number | null;
+    // promptImage?: string | null;
   }): Promise<ImageNode> {
     try {
       // Check if specs are empty
@@ -101,19 +107,20 @@ class ImageService {
       if (!hasSpecs) {
         throw new Error('Specifications cannot be empty');
       }
-      
+
+      const payload = {
+        prompt: data.prompt,
+        spec_json: data.specs,
+        parent_id: data.parentId,
+        // ...(data.promptImage && { reference_image: data.promptImage }),
+      };
+      console.log("payload", payload);
       const response = await fetch(`${API_BASE}/image-gen/generate`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          prompt: data.prompt,
-          // negativePrompt: data.negativePrompt,
-          specJson: data.specs,
-          parentId: data.parentId,
-          actionType: data.parentId ? 'edit' : 'generate',
-        }),
+        body: JSON.stringify(payload),
       });
       
       if (!response.ok) {

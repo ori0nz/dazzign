@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Form, File, UploadFile
+from fastapi import APIRouter, HTTPException, Form, File, UploadFile, Body
 from typing import Any, Optional
 from typing import Any
 from app.schemas import ToSpecRequest, ToSpecResponse, PCCaseAttributes
@@ -10,18 +10,20 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 @router.post("/to-spec", response_model=ToSpecResponse)
-async def text_to_image(
-    prompt: Optional[str] = Form(None),
-    negative_prompt: Optional[str] = Form(None),
-    parent_id: Optional[int] = Form(None),
-    image_file: UploadFile = File(None)
+async def text_to_image(    
+    prompt: str = Body(...),                    
+    negative_prompt: Optional[str] = Body(None),
+    parent_id: Optional[int] = Body(None),      
+    image_base64: Optional[str] = Body(None),   
 ) -> Any:
     """
     Convert free-form text to structured PC case design attributes
     """
+    logger.info(f"prompt: {prompt}")
+    logger.info(f"image_base64: {image_base64}")
     
-    if not prompt and not image_file:
-        raise HTTPException(status_code=422, detail="At least one of 'prompt' or 'image_file' must be provided.")
+    if not prompt and not image_base64:
+        raise HTTPException(status_code=422, detail="At least one of 'prompt' or 'image_base64' must be provided.")
 
     try:
         spec_request = ToSpecRequest(
@@ -36,12 +38,11 @@ async def text_to_image(
     image_attributes = None
     text_attributes = None
     
-    if image_file:
+    if image_base64:
         # todo: mpv stage handle here but need to move to image gen service
 
+        image_base64 = image_base64.split(",")[1]
         try:
-            image_base64 = await image_file.read()
-            image_base64 = base64.b64encode(image_base64).decode('utf-8')
             image_output = await TextGenService.text_to_image_attributes(prompt=None, image_base64=image_base64, provider="claude", model_id="us.anthropic.claude-3-7-sonnet-20250219-v1:0")
             image_attributes = image_output.attributes
         except Exception as e:

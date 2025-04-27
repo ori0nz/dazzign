@@ -6,6 +6,7 @@ from app.schemas import GenerateImageRequest, GenerateImageResponse
 from app.services import NodeService, ImageGenService
 from app.services.image_gen_service import ImageProvider
 import logging
+import random
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -46,7 +47,7 @@ async def generate_image(
         image_base64 = await image_service.generate_image(prompt=structured_prompt, 
                                                             negative_prompt=negative_prompt,
                                                             output_format="jpeg",
-                                                            seed=202,
+                                                            seed=random.randint(0, 1000000),
                                                             provider=ImageProvider.AWS_BEDROCK,
                                                             model_id="stability.stable-image-ultra-v1:1")
         image_data.image_base64 = image_base64

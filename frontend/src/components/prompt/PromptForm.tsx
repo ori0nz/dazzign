@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Button from '../ui/Button';
 import TagInput from './TagInput';
 import { SPEC_CATEGORIES } from '../../data/mockData';
 import { imageService } from '../../services/imageService';
 import { useTranslation } from 'react-i18next';
+
+import { X, Upload } from 'lucide-react';
 
 interface PromptFormProps {
   initialPrompt?: string;
@@ -14,6 +16,7 @@ interface PromptFormProps {
     // negativePrompt: string;
     specs: Record<string, string[]>;
     parentId: number | null;
+    promptImage?: string | null;
   }) => void;
 }
 
@@ -25,6 +28,7 @@ const PromptForm: React.FC<PromptFormProps> = ({
 }) => {
   const { t } = useTranslation();
   const [prompt, setPrompt] = useState(initialPrompt);
+  const [promptImage, setPromptImage] = useState<string | null>(null);
   const [specs, setSpecs] = useState<Record<string, string[]>>(
     SPEC_CATEGORIES.reduce((acc, category) => {
       acc[category.id] = initialSpecs[category.id] || [];
@@ -32,6 +36,7 @@ const PromptForm: React.FC<PromptFormProps> = ({
     }, {} as Record<string, string[]>)
   );
   const [isGeneratingSpecs, setIsGeneratingSpecs] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
@@ -52,7 +57,7 @@ const PromptForm: React.FC<PromptFormProps> = ({
     
     setIsGeneratingSpecs(true);
     try {
-      const generatedSpecs = await imageService.generateSpecs(prompt);
+      const generatedSpecs = await imageService.generateSpecs(prompt, promptImage);
       console.log("Generated specs:", generatedSpecs);
       // Ensure all values are arrays
       const sanitizedSpecs = Object.entries(generatedSpecs.attributes).reduce((acc, [key, value]) => {
@@ -69,6 +74,25 @@ const PromptForm: React.FC<PromptFormProps> = ({
 
   const handlePromptChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setPrompt(e.target.value);
+  };
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setPromptImage(e.target?.result as string);
+      };
+
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setPromptImage(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
 
   // Add a function to check if specs are valid
@@ -147,26 +171,63 @@ const PromptForm: React.FC<PromptFormProps> = ({
         <label htmlFor="prompt" className="mb-2 block text-lg font-medium text-gray-900">
           Main Prompt:
         </label>
-        <div className="space-y-2">
-          <textarea
-            id="prompt"
-            value={prompt}
-            onChange={handlePromptChange}
-            className="block w-full rounded-lg border border-gray-300 bg-white p-2.5 text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
-            placeholder="Describe what you want to generate..."
-            rows={3}
-          />
-          <Button
-            type="button"
-            variant="outline"
-            onClick={generateSpecsFromPrompt}
-            disabled={!prompt.trim() || isGeneratingSpecs}
-            className="w-full sm:w-auto"
-          >
-            {isGeneratingSpecs ? 'Generating...' : 'Generate Specifications'}
-          </Button>
-        </div>
-      </div>
+        <div className="flex gap-4">
+          <div className="flex-1">
+            <textarea
+              id="prompt"
+              value={prompt}
+              onChange={handlePromptChange}
+              className="block w-full rounded-lg border border-gray-300 bg-white p-2.5 text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+              placeholder="Describe what you want to generate..."
+              rows={3}
+            />
+          </div>
+          <div className="flex h-[96px] w-[96px] flex-shrink-0">
+            {promptImage ? (
+              <div className="relative h-full w-full">
+                <img
+                  src={promptImage}
+                  alt="Prompt reference"
+                  className="h-full w-full rounded-lg object-cover"
+                />
+                <button
+                  type="button"
+                  onClick={handleRemoveImage}
+                  className="absolute -right-2 -top-2 rounded-full bg-red-500 p-1 text-white shadow-md hover:bg-red-600"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            ) : (
+              <>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="hidden"
+                />
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="flex h-full w-full items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 hover:bg-gray-100"
+                >
+                  <Upload className="h-6 w-6 text-gray-400" />
+                </button>
+              </>
+            )}
+          </div>
+          </div>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={generateSpecsFromPrompt}
+              disabled={!prompt.trim() || isGeneratingSpecs}
+              className="w-full sm:w-auto"
+            >
+              {isGeneratingSpecs ? 'Generating...' : 'Generate Specifications'}
+            </Button>
+          </div>
 
       {SPEC_CATEGORIES.map((category) => (
         <TagInput

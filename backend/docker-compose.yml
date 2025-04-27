@@ -1,6 +1,22 @@
 version: '3.8'
 
 services:
+  frontend:
+    container_name: dazzign-frontend
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - "5173:5173"
+    volumes:
+      - ../frontend:/app
+      - /app/node_modules
+    environment:
+      - VITE_API_URL=http://backend:8000
+    depends_on:
+      - backend
+
   backend:
     container_name: dazzign-backend
     build:
@@ -10,16 +26,18 @@ services:
     ports:
       - "${PORT:-8000}:8000"
     environment:
+      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-dazzign}
       - POSTGRES_USER=${POSTGRES_USER:-postgres}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres}
       - POSTGRES_DB=${POSTGRES_DB:-dazzign}
       - DB_HOST=db
       - DB_PORT=5432
-      - USE_FAKE_DATA=${USE_FAKE_DATA:-True}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
-      - OPENAI_MODEL=${OPENAI_MODEL:-gpt-4.1-nano}
-      - STABILITY_AI_API_KEY=${STABILITY_AI_API_KEY}
-      - AWS_NOVA_API_KEY=${AWS_NOVA_API_KEY}
+      - OPENAI_MODEL=${OPENAI_MODEL}
+      - AWS_REGION=${AWS_REGION:-us-west-2}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - USE_FAKE_DATA=False
     volumes:
       - .:/app
     depends_on:

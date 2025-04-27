@@ -8,7 +8,27 @@ class Settings(BaseSettings):
     Application settings loaded from environment variables
     """
     # Database settings
-    DATABASE_URL: PostgresDsn
+    DATABASE_URL: Optional[PostgresDsn] = None
+    POSTGRES_USER: str = "postgres"
+    POSTGRES_PASSWORD: str = "postgres"
+    POSTGRES_DB: str = "dazzign"
+    DB_HOST: str = "db"
+    DB_PORT: int = 5432
+    
+    @property
+    def get_database_url(self) -> PostgresDsn:
+        """Fallback to construct DATABASE_URL if not provided"""
+        if self.DATABASE_URL:
+            return self.DATABASE_URL
+            
+        return PostgresDsn.build(
+            scheme="postgresql+asyncpg",
+            username=self.POSTGRES_USER,
+            password=self.POSTGRES_PASSWORD,
+            host=self.DB_HOST,
+            port=self.DB_PORT,
+            path=self.POSTGRES_DB,
+        )
     
     # Server settings
     PORT: int = 8000

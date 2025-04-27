@@ -6,6 +6,7 @@ import PromptInput from './pages/PromptInput';
 import ImagePreviewPage from './pages/ImagePreviewPage';
 import LineageView from './pages/LineageView';
 import LanguageSwitcher from './components/ui/LanguageSwitcher';
+import IdeaPage from './pages/IdeaPage';
 
 function App() {
   const { t } = useTranslation();
@@ -36,6 +37,7 @@ function App() {
             <Route path="/edit/:parentId" element={<PromptInput />} />
             <Route path="/preview/:id" element={<ImagePreviewPage />} />
             <Route path="/lineage/:id" element={<LineageView />} />
+            <Route path="/idea" element={<IdeaPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </main>

@@ -64,7 +64,7 @@ const ImageCard: React.FC<ImageCardProps> = ({ image, onClick }) => {
           className="h-full w-full object-cover object-center transition-transform duration-300 group-hover:scale-105"
         />
         <div className="absolute top-2 right-2 rounded-full bg-gray-800 bg-opacity-75 px-2 py-1 text-xs font-medium text-white">
-          {image.actionType === 'generate' ? 'Generated' : 'Edited'}
+          {image.actionType === 'generate' ? 'Generated' : image.actionType}
         </div>
       </div>
       

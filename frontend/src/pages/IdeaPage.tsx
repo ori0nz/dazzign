@@ -100,6 +100,16 @@ const IdeaPage: React.FC = () => {
     navigate('/create');
   };
 
+  const handleIdeaClick = (idea: Idea) => {
+    navigate('/create', {
+      state: {
+        prompt: idea.description,
+        attributes: idea.attributes,
+        keyword: idea.keyword
+      }
+    });
+  };
+
   const getGridSpan = (popularity: number): string => {
     if (popularity >= 90) return 'md:col-span-2 md:row-span-2';
     if (popularity >= 85) return 'md:col-span-2';
@@ -131,7 +141,8 @@ const IdeaPage: React.FC = () => {
         {ideas.map((idea) => (
           <div
             key={idea.id}
-            className={`group relative overflow-hidden rounded-xl bg-white shadow-sm transition-all duration-300 hover:shadow-lg ${getGridSpan(idea.popularity)}`}
+            className={`group relative overflow-hidden rounded-xl bg-white shadow-sm transition-all duration-300 hover:shadow-lg ${getGridSpan(idea.popularity)} cursor-pointer`}
+            onClick={() => handleIdeaClick(idea)}
           >
             <div className="absolute inset-0">
               <img

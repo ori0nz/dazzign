@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams,useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import PromptForm from '../components/prompt/PromptForm';
 import { imageService } from '../services/imageService';
@@ -8,11 +8,18 @@ import { ImageNode } from '../models/types';
 const PromptInput: React.FC = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const location = useLocation();
   const { parentId } = useParams<{ parentId?: string }>();
   const parsedParentId = parentId ? parseInt(parentId, 10) : null;
   const [isLoading, setIsLoading] = useState(false);
   const [parentImage, setParentImage] = useState<ImageNode | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  const ideaState = location.state as {
+    prompt?: string;
+    attributes?: string[];
+    keyword?: string;
+  } | null;
 
   useEffect(() => {
     const loadParentImage = async () => {
@@ -125,7 +132,7 @@ const PromptInput: React.FC = () => {
       
       <PromptForm 
         parentId={parsedParentId}
-        initialPrompt={parentImage?.prompt || ''}
+        initialPrompt={ideaState?.prompt || parentImage?.prompt || ''}
         // initialStructuredPrompt={parentImage?.negativePrompt || ''}
         initialSpecs={parentImage?.specJson || {}}
         onSubmit={handleSubmit}

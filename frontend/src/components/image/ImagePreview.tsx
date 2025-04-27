@@ -112,7 +112,7 @@ const ImagePreview: React.FC<ImagePreviewProps> = ({
           <div className="flex items-center justify-between border-t border-gray-200 pt-4 text-sm text-gray-500">
             <div>
               <span className="font-medium">
-                {image.actionType === 'generate' ? 'Generated' : 'Edited'}
+                {image.actionType === 'generate' ? 'Generated' : image.actionType}
               </span>{' '}
               on {formatDate(image.createdAt)}
             </div>

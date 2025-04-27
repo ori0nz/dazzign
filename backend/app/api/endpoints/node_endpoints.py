@@ -24,7 +24,7 @@ async def list_root_nodes(
         nodes, total = await NodeService.get_root_nodes(
             db,
             page=page,
-            page_size=page_size
+            page_size=100
         )
         
         return RootNodesResponse(

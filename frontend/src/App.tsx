@@ -21,6 +21,7 @@ function App() {
             <div className="ml-8 hidden items-center space-x-6 text-2xl font-medium md:flex">
               <a href="/" className="text-gray-900 hover:text-indigo-600">{t('common.projects')}</a>
               <a href="/create" className="text-gray-500 hover:text-indigo-600">{t('common.create')}</a>
+              <a href="/idea" className="text-gray-500 hover:text-indigo-600">{t('common.idea')}</a>
             </div>
             <div className="absolute right-4 top-1/2 -translate-y-1/2">
               <LanguageSwitcher />

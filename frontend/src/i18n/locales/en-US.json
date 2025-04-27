@@ -8,7 +8,8 @@
     "returnHome": "Return Home",
     "confirm": "Confirm",
     "cancel": "Cancel",
-    "ok": "OK"
+    "ok": "OK",
+    "idea": "Idea"
   },
   "home": {
     "title": "Projects",
@@ -39,8 +40,8 @@
     "confirmGenerationDesc": "Are you sure you want to generate this image?"
   },
   "lineage": {
-    "title": "Image Lineage",
-    "history": "Generation History",
+    "title": "History",
+    "history": "",
     "noData": "No image data available.",
     "noImageId": "No image ID provided",
     "invalidImageId": "Invalid image ID",

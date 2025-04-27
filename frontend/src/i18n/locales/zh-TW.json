@@ -2,6 +2,7 @@
   "common": {
     "projects": "專案",
     "create": "建立",
+    "idea": "靈感",
     "loading": "載入中...",
     "error": "錯誤",
     "back": "返回",
@@ -39,8 +40,8 @@
     "confirmGenerationDesc": "您確定要生成這張圖片嗎？"
   },
   "lineage": {
-    "title": "圖片譜系",
-    "history": "生成歷史",
+    "title": "設計歷程",
+    "history": "",
     "noData": "無可用的圖片資料",
     "noImageId": "未提供圖片ID",
     "invalidImageId": "無效的圖片ID",
